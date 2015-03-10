@@ -8,7 +8,7 @@ import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
 
-    private String test = "Push working now!";
+    private String test = "Push working now!v21";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
