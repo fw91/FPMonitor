@@ -3,6 +3,12 @@
 
     <string name="app_name">FPMonitor</string>
     <string name="hello_world">Hello world!</string>
+
+    <string name="menu_description">Fingerprinting Monitor App</string>
+    <string name="menu_btn1">Common Fingerprinting</string>
+    <string name="menu_btn2">Beacon Monitor</string>
+    <string name="menu_btn3">Beacon Fingerprinting</string>
+
     <string name="action_settings">Settings</string>
 
 </resources>
