@@ -1,4 +1,4 @@
-package de.lmu.mvs.fpmonitor;
+package de.lmu.mvs.fpmonitor.Activities;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -12,6 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.List;
+
+import de.lmu.mvs.fpmonitor.R;
 
 
 public class CommonFP_Activity extends Activity

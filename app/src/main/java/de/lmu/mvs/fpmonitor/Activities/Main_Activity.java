@@ -1,15 +1,15 @@
-package de.lmu.mvs.fpmonitor;
+package de.lmu.mvs.fpmonitor.Activities;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import de.lmu.mvs.fpmonitor.R;
 
-public class MainActivity extends ActionBarActivity
+
+public class Main_Activity extends ActionBarActivity
 {
 
     private Button btn1,btn2,btn3;

@@ -1,4 +1,4 @@
-package de.lmu.mvs.fpmonitor;
+package de.lmu.mvs.fpmonitor.Database;
 
 import java.util.ArrayList;
 
