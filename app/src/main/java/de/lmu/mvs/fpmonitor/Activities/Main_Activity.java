@@ -30,7 +30,7 @@ public class Main_Activity extends ActionBarActivity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), CommonFP_Activity.class));
+                startActivity(new Intent(getApplicationContext(), Testing_Activity.class));
             }
         });
 
@@ -39,7 +39,7 @@ public class Main_Activity extends ActionBarActivity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), BeaconMonitor_Activity.class));
+                startActivity(new Intent(getApplicationContext(), HomeFP_Activity.class));
             }
         });
 
@@ -48,7 +48,7 @@ public class Main_Activity extends ActionBarActivity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), BeaconFP_Activity.class));
+                startActivity(new Intent(getApplicationContext(), RecordHomeFP_Activity.class));
             }
         });
     }

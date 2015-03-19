@@ -5,31 +5,16 @@ import java.util.ArrayList;
 public class Fingerprint
 {
 
-    public int x;
-    public int y;
-    public int e;
-    public int d; //direction, degree
-    public ArrayList<Measurement> measures;
+    public int x_coordinate;
+    public int y_coordinate;
+    public int direction;
+    public ArrayList<APInfo> apList;
 
-    public Fingerprint(int x, int y, int e, int d, ArrayList<Measurement> measures)
+    public Fingerprint(int x, int y, int d, ArrayList<APInfo> apList)
     {
-        this.x = x;
-        this.y = y;
-        this.e = e;
-        this.d = d;
-        this.measures = measures;
+        this.x_coordinate = x;
+        this.y_coordinate = y;
+        this.direction    = d;
+        this.apList       = apList;
     }
-
-    @Override
-    public String toString()
-    {
-        String s = "fingerprint: ";
-        s+= x + "," + y + "," + e + "," + d + "\n";
-        for(Measurement m : measures)
-        {
-            s+=m.toString() + "\n";
-        }
-        return s;
-    }
-
 }
