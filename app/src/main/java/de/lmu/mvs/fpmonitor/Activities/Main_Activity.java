@@ -39,7 +39,7 @@ public class Main_Activity extends ActionBarActivity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), HomeFP_Activity.class));
+                startActivity(new Intent(getApplicationContext(), FingerprintingHome_Activity.class));
             }
         });
 
@@ -48,7 +48,7 @@ public class Main_Activity extends ActionBarActivity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), RecordHomeFP_Activity.class));
+                startActivity(new Intent(getApplicationContext(), RadioMapHome_Activity.class));
             }
         });
     }

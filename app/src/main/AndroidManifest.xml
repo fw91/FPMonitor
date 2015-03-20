@@ -27,13 +27,13 @@
         </activity>
 
         <activity
-            android:name=".Activities.HomeFP_Activity"
+            android:name=".Activities.FingerprintingHome_Activity"
             android:label="@string/app_name"
             android:screenOrientation="landscape">
         </activity>
 
         <activity
-            android:name=".Activities.RecordHomeFP_Activity"
+            android:name=".Activities.RadioMapHome_Activity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>

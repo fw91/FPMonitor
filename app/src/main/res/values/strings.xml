@@ -6,8 +6,8 @@
 
     <string name="menu_description">Fingerprinting Monitor App</string>
     <string name="menu_btn1">Testing</string>
-    <string name="menu_btn2">Home FP</string>
-    <string name="menu_btn3">Record FP-DB (Home)</string>
+    <string name="menu_btn2">Fingerprinting(Home)</string>
+    <string name="menu_btn3">Record RadioMap(Home)</string>
     <string name="menu_btn4">ToCome</string>
 
     <string name="action_settings">Settings</string>

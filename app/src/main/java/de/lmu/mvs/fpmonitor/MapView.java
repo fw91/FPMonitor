@@ -8,7 +8,10 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-
+/**
+ * The MapView-Object.
+ * Can update and print the current Position.
+ */
 public class MapView extends ImageView
 {
     Paint myPaint;
@@ -63,9 +66,21 @@ public class MapView extends ImageView
     }
 
 
+    /**
+     * Set the Coordinates for current Position.
+     * Scales the values of x and y for different Map-Sizes, based on the dimensions present at
+     * recording.
+     * @param x x-Coordinate
+     * @param y y-Coordinate
+     * @param scaledWidth current Map-Width (needed for Scaling)
+     * @param scaledHeight current Map-Height (needed for Scaling)
+     */
     public void setPosition(float x, float y, float scaledWidth, float scaledHeight)
     {
-        this.x = Math.round((x*(scaledWidth/INITIAL_MAP_WIDTH)));
-        this.y = Math.round((y*(scaledHeight/INITIAL_MAP_HEIGHT)));
+        float xScaleFactor = scaledWidth / INITIAL_MAP_WIDTH;
+        float yScaleFactor = scaledHeight / INITIAL_MAP_HEIGHT;
+
+        this.x = x * xScaleFactor;
+        this.y = y * yScaleFactor;
     }
 }
