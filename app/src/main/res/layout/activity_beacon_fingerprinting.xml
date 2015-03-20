@@ -16,7 +16,7 @@
         android:gravity="center_horizontal" />
 
     <Button
-        android:id="@+id/btn1"
+        android:id="@+id/testingBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn1"
@@ -24,7 +24,7 @@
         android:layout_gravity="center_horizontal"/>
 
     <Button
-        android:id="@+id/btn2"
+        android:id="@+id/fpHomeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn2"
@@ -32,7 +32,7 @@
         android:layout_gravity="center_horizontal"/>
 
     <Button
-        android:id="@+id/btn3"
+        android:id="@+id/recordHomeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn3"

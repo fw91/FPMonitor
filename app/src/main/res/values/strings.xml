@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">FPMonitor</string>
-    <string name="hello_world">Hello world!</string>
-
-    <string name="menu_description">Fingerprinting Monitor App</string>
-    <string name="menu_btn1">Testing</string>
-    <string name="menu_btn2">Fingerprinting(Home)</string>
-    <string name="menu_btn3">Record RadioMap(Home)</string>
-    <string name="menu_btn4">ToCome</string>
-
+    <!-- App -->
+    <string name="app_name">FP Monitor</string>
     <string name="action_settings">Settings</string>
+
+    <!-- Main Activity -->
+    <string name="menu_description">Fingerprinting Monitor App</string>
+    <string name="menu_btn1">For Testing</string>
+    <string name="menu_btn2">Fingerprinting (Home)</string>
+    <string name="menu_btn3">Record RadioMap (Home)</string>
+    <string name="menu_btn4">To Come</string>
+
+    <!-- Radio Map Activity -->
+    <string name="radioMap_title">Record Radio Map</string>
+    <string name="radioMap_recordBtn">Record</string>
+    <string name="radioMap_nextBtn">Start Recording</string>
+    <string name="radioMap_showBtn">Show DB</string>
+    <string name="radioMap_deleteBtn">Delete DB</string>
 
 </resources>

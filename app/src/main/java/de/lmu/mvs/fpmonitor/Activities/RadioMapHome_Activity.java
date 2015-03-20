@@ -1,8 +1,11 @@
 package de.lmu.mvs.fpmonitor.Activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
@@ -31,7 +34,7 @@ public class RadioMapHome_Activity extends Activity
 {
     MapView map;
     TextView tv;
-    Button btn1, btn2;
+    Button btn1, btn2, btn3, btn4;
 
     private float positions[][];
     private int posCtr;
@@ -46,6 +49,7 @@ public class RadioMapHome_Activity extends Activity
     private Fingerprint currentFP;
     private ArrayList<APInfo> currentAPList;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -57,12 +61,15 @@ public class RadioMapHome_Activity extends Activity
         tv       = (TextView)findViewById(R.id.recordTV);
         btn1     = (Button)findViewById(R.id.recordBtn);
         btn2     = (Button)findViewById(R.id.nextBtn);
+        btn3     = (Button)findViewById(R.id.showDB);
+        btn4     = (Button)findViewById(R.id.deleteDB);
 
         btn1.setVisibility(View.GONE);
+        btn3.setVisibility(View.GONE);
         tv.setText("Press the Button to start recording.");
 
         // Initialize Coordinates
-        positions = initCoordinates("home");
+        positions = initCoordinates();
         posCtr    = 0;
 
         // Initialize Flags
@@ -90,6 +97,15 @@ public class RadioMapHome_Activity extends Activity
             public void onClick(View v)
             {
                 ButtonTwoHandler();
+            }
+        });
+
+        btn4.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                clearDatabaseDialog();
             }
         });
 
@@ -167,6 +183,8 @@ public class RadioMapHome_Activity extends Activity
         {
             btn1.setVisibility(View.VISIBLE);
             btn2.setText("Next");
+            btn3.setVisibility(View.GONE);
+            btn4.setVisibility(View.GONE);
             tv.setText("Walk to the Position and press Record.");
             started = true;
 
@@ -191,6 +209,8 @@ public class RadioMapHome_Activity extends Activity
                 {
                     btn1.setVisibility(View.GONE);
                     btn2.setVisibility(View.GONE);
+                    //btn3.setVisibility(View.VISIBLE);
+                    btn4.setVisibility(View.VISIBLE);
 
                     map.setPosition(0,0,map.getWidth(),map.getHeight());
                     map.invalidate();
@@ -210,10 +230,9 @@ public class RadioMapHome_Activity extends Activity
 
     /**
      * Initialize the set of Coordinates to be printed on the Map.
-     * @param location where
-     * @return an Array of Coordinates for chosen location
+     * @return an Array of Coordinates
      */
-    private float[][] initCoordinates(String location)
+    private float[][] initCoordinates()
     {
         float[][] homeCoordinates =
                 {{57,85},{123,85},{57,139},{123,139},                         // Room1
@@ -226,18 +245,7 @@ public class RadioMapHome_Activity extends Activity
                  {456,58},{456,120},
                  {302,203},{376,203},{445,203},{302,252},{376,252},{445,252}};
 
-        float[][] uniCoordinates =
-                {};
-
-        switch (location)
-        {
-            case "home":
-                return homeCoordinates;
-            case "uni":
-                return uniCoordinates;
-            default:
-                return homeCoordinates;
-        }
+        return homeCoordinates;
     }
 
 
@@ -270,6 +278,40 @@ public class RadioMapHome_Activity extends Activity
     }
 
 
+
+    /**
+     * AlertDialog for clearing the DB.
+     */
+    private void clearDatabaseDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Clear Fingerprint Database?");
+        builder.setMessage("You will lose all stored Fingerprints!");
+        builder.setPositiveButton("Yes", new Dialog.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                //DH.clearDB();
+                dialog.cancel();
+                Toast.makeText(getApplicationContext(),"Database cleared",Toast.LENGTH_SHORT).show();
+            }
+
+        });
+        builder.setNegativeButton("Cancel", new Dialog.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+
     /**
      * A Local Wifi Receiver to handle incoming Wifi Signals.
      * It retrieves the Data and extracts incoming MAC/RSSI-Information and automatically puts it
@@ -285,16 +327,16 @@ public class RadioMapHome_Activity extends Activity
             if (wifiScanList != null)
             {
                 wifiReceived = true;
-            }
 
-            ArrayList<APInfo> mAPList = new ArrayList<>();
+                ArrayList<APInfo> mAPList = new ArrayList<>();
 
-            for(int i = 0; i < wifiScanList.size(); i++)
-            {
-                APInfo mAP = new APInfo(wifiScanList.get(i).BSSID,wifiScanList.get(i).level);
-                mAPList.add(mAP);
+                for(int i = 0; i < wifiScanList.size(); i++)
+                {
+                    APInfo mAP = new APInfo(wifiScanList.get(i).BSSID, wifiScanList.get(i).level);
+                    mAPList.add(mAP);
+                }
+                currentAPList = mAPList;
             }
-            currentAPList = mAPList;
         }
     }
 }

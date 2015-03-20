@@ -60,6 +60,16 @@ public class DatabaseHandler extends SQLiteOpenHelper
         onCreate(db);
     }
 
+    /**
+     *  clear the Spot-Table and re-create an empty one
+     */
+    public void clearDB()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + FINGERPRINT_TABLE);
+        db.execSQL(createFingerprintDB);
+        db.close();
+    }
 
     /**
      * Easy way of checking if there is any data inside the Table
