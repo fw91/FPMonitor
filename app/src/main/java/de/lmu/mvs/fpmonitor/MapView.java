@@ -41,6 +41,9 @@ public class MapView extends ImageView
     }
 
 
+    /**
+     * Initialize
+     */
     private void init()
     {
         Resources res = getResources();

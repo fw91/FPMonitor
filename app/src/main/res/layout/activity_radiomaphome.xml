@@ -63,6 +63,16 @@
 
     </TableRow>
 
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_below="@id/recordTV"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:visibility="gone" />
+
     <TableRow
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"

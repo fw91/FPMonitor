@@ -8,7 +8,10 @@ import android.widget.Button;
 
 import de.lmu.mvs.fpmonitor.R;
 
-
+/**
+ * The Main Activity.
+ * For navigating through the App.
+ */
 public class Main_Activity extends Activity
 {
     @Override

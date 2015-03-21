@@ -5,12 +5,12 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.util.Log;
 
+/**
+ * A Very Simple Compass using Magnetometer and Accelerometer.
+ */
 public class Compass implements SensorEventListener
 {
-    private static final String TAG = "Compass";
-
     private SensorManager mSensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
@@ -18,10 +18,13 @@ public class Compass implements SensorEventListener
     private float[] mGravity     = new float[3];
     private float[] mGeomagnetic = new float[3];
 
-    private float azimuth        = 0f;
     private String direction     = "";
 
 
+    /**
+     * Main Constructor
+     * @param context Context from Activity calling
+     */
     public Compass(Context context)
     {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -29,21 +32,31 @@ public class Compass implements SensorEventListener
         magnetometer   = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
+
+    /**
+     * Register Listeners.
+     */
     public void start()
     {
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
+
+    /**
+     * Unregister Listeners.
+     */
     public void stop()
     {
         mSensorManager.unregisterListener(this);
     }
 
+
     @Override
     public void onSensorChanged(SensorEvent event)
     {
         final float alpha = 0.97f;
+        float azimuth;
 
         synchronized (this)
         {
@@ -52,12 +65,6 @@ public class Compass implements SensorEventListener
                 mGravity[0] = alpha * mGravity[0] + (1 - alpha) * event.values[0];
                 mGravity[1] = alpha * mGravity[1] + (1 - alpha) * event.values[1];
                 mGravity[2] = alpha * mGravity[2] + (1 - alpha) * event.values[2];
-
-                /*
-                Log.e(TAG, Float.toString(mGravity[0]));
-                Log.e(TAG, Float.toString(mGravity[1]));
-                Log.e(TAG, Float.toString(mGravity[2]));
-                */
             }
 
             if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
@@ -65,13 +72,6 @@ public class Compass implements SensorEventListener
                 mGeomagnetic[0] = alpha * mGeomagnetic[0] + (1 - alpha) * event.values[0];
                 mGeomagnetic[1] = alpha * mGeomagnetic[1] + (1 - alpha) * event.values[1];
                 mGeomagnetic[2] = alpha * mGeomagnetic[2] + (1 - alpha) * event.values[2];
-
-                /*
-                Log.e(TAG, Float.toString(event.values[0]));
-                Log.e(TAG, Float.toString(event.values[1]));
-                Log.e(TAG, Float.toString(event.values[2]));
-                */
-
             }
 
             float R[] = new float[9];
@@ -84,45 +84,44 @@ public class Compass implements SensorEventListener
                 float orientation[] = new float[3];
                 SensorManager.getOrientation(R, orientation);
 
-                //Log.d(TAG, "azimuth (rad): " + azimuth);
-
-                azimuth = (float) Math.toDegrees(orientation[0]); // orientation
+                azimuth = (float) Math.toDegrees(orientation[0]);
                 azimuth = (azimuth + 360) % 360;
-
-                //Log.d(TAG, "azimuth (deg): " + azimuth);
 
                 if (azimuth >= 315 || azimuth < 45)
                 {
-                    Log.d("COMPASSDIRECTION","NORTH");
-                    direction = "North";
+                    direction = "N";
                 }
                 else if (azimuth >= 45 && azimuth < 135 )
                 {
-                    Log.d("COMPASSDIRECTION","EAST");
-                    direction = "East";
+                    direction = "E";
                 }
                 else if  (azimuth >= 135 && azimuth < 225)
                 {
-                    Log.d("COMPASSDIRECTION","SOUTH");
-                    direction = "South";
+                    direction = "S";
                 }
                 else if (azimuth >= 225 && azimuth < 315)
                 {
-                    Log.d("COMPASSDIRECTION","WEST");
-                    direction = "West";
+                    direction = "W";
                 }
             }
         }
     }
 
+
+    /**
+     * Retrieve direction the Phone is currently facing.
+     * (North/East/South/West)
+     * @return direction
+     */
     public String getDir()
     {
         return this.direction;
     }
 
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy)
     {
-
+        //not in use
     }
 }

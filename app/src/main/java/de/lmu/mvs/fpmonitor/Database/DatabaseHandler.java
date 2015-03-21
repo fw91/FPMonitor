@@ -37,7 +37,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
     /**
      * Main Constructor
-     * @param ctx
+     * @param ctx Application Context
      */
     public DatabaseHandler(Context ctx)
     {
@@ -60,6 +60,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
         onCreate(db);
     }
 
+
     /**
      *  clear the Spot-Table and re-create an empty one
      */
@@ -70,6 +71,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
         db.execSQL(createFingerprintDB);
         db.close();
     }
+
 
     /**
      * Easy way of checking if there is any data inside the Table
@@ -101,6 +103,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     /**
      * Convert an ArrayList of APInfos into a JSON-String for storing into theDatabase
      * @param apInfos ArrayList of APInfo
+     * @return A JSON-Array of APInfo ArrayList for storing into DB
      */
     private JSONArray ArrayToJSON(ArrayList<APInfo> apInfos)
     {
@@ -130,8 +133,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
     /**
      * Converts the JSONArray-String from the Database into an APInfo ArrayList
-     * @param apInfoJSON
-     * @return
+     * @param apInfoJSON JSON-String of Array from DB
+     * @return An ArrayList of APInfo for Fingerprint
      */
     private ArrayList<APInfo> getAPArray(String apInfoJSON)
     {
@@ -171,7 +174,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
         ArrayList<Fingerprint> fingerprints = new ArrayList<>();
 
         Fingerprint fp;
-        int x,y,d;
+        int x,y;
+        String d;
         ArrayList<APInfo> apInfos;
 
         if (!tableIsEmpty())
@@ -185,10 +189,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
             {
                 x       = Integer.parseInt(cr.getString(1));
                 y       = Integer.parseInt(cr.getString(2));
-                d       = Integer.parseInt(cr.getString(3));
+                d       = cr.getString(3);
                 apInfos = getAPArray(cr.getString(4));
 
-                fp = new Fingerprint (x,y,d,apInfos);
+                fp      = new Fingerprint (x,y,d,apInfos);
+
                 fingerprints.add(fp);
 
             } while (cr.moveToNext());
@@ -214,7 +219,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
         fingerprintValues.put(FP_ID,   "Position." + (pos+1));
         fingerprintValues.put(X,       Integer.toString(f.x_coordinate));
         fingerprintValues.put(Y,       Integer.toString(f.y_coordinate));
-        fingerprintValues.put(DIR,     Integer.toString(f.direction));
+        fingerprintValues.put(DIR,     f.direction);
         fingerprintValues.put(AP_INFO, ArrayToJSON(f.apList).toString());
 
         db.insert(FINGERPRINT_TABLE,null,fingerprintValues);

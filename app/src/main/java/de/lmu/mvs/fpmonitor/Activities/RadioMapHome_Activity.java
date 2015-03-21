@@ -11,14 +11,18 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import de.lmu.mvs.fpmonitor.Compass;
 import de.lmu.mvs.fpmonitor.Database.APInfo;
 import de.lmu.mvs.fpmonitor.Database.Fingerprint;
 import de.lmu.mvs.fpmonitor.MapView;
@@ -35,18 +39,44 @@ public class RadioMapHome_Activity extends Activity
     MapView map;
     TextView tv;
     Button btn1, btn2, btn3, btn4;
+    ProgressBar progress;
+
+    // This is required to get up-to-date ScanResults
+    BroadcastReceiver recordingReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            // TODO Add some Exit-Strategy if there are no Wifi Signals to receive. Necessary??
+
+            if (started)
+            {
+                progress.setVisibility(View.GONE);
+                btn1.setVisibility(View.VISIBLE);
+                btn2.setVisibility(View.VISIBLE);
+                recordFingerprint();
+                recorded = true;
+                tv.setText("Record successful. Press Next.");
+                queryScanResults = false;
+            }
+        }
+    };
+
+    final static String SCAN_SUCCESSFUL = "scan_successful";
+    Intent scanSuccess = new Intent(SCAN_SUCCESSFUL);
 
     private float positions[][];
     private int posCtr;
 
     private boolean recorded;
     private boolean started;
-    private boolean wifiReceived;
+    private boolean queryScanResults;
 
     private WifiManager mWifiManager;
     private WifiReceiver mWifiReceiver;
 
-    private Fingerprint currentFP;
+    private Compass compass;
+
     private ArrayList<APInfo> currentAPList;
 
 
@@ -63,6 +93,7 @@ public class RadioMapHome_Activity extends Activity
         btn2     = (Button)findViewById(R.id.nextBtn);
         btn3     = (Button)findViewById(R.id.showDB);
         btn4     = (Button)findViewById(R.id.deleteDB);
+        progress = (ProgressBar)findViewById(R.id.progress);
 
         btn1.setVisibility(View.GONE);
         btn3.setVisibility(View.GONE);
@@ -73,13 +104,16 @@ public class RadioMapHome_Activity extends Activity
         posCtr    = 0;
 
         // Initialize Flags
-        recorded     = true;
-        started      = false;
-        wifiReceived = false;
+        recorded         = true;
+        started          = false;
+        queryScanResults = false;
 
         // Initialize Wifi
         mWifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
         mWifiReceiver = new WifiReceiver();
+
+        // Initialize Compass
+        compass = new Compass(getApplicationContext());
 
         // Set OnClickListeners
         btn1.setOnClickListener(new View.OnClickListener()
@@ -131,6 +165,7 @@ public class RadioMapHome_Activity extends Activity
      * Whenever this Activity gets resumed (or started).
      * Make sure Wifi is enabled.
      * Register Receivers.
+     * Register Compass.
      */
     protected void onResume()
     {
@@ -138,7 +173,10 @@ public class RadioMapHome_Activity extends Activity
         {
             mWifiManager.setWifiEnabled(true);
         }
+
         registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        LocalBroadcastManager.getInstance(this).registerReceiver(recordingReceiver, new IntentFilter(SCAN_SUCCESSFUL));
+        compass.start();
 
         super.onResume();
     }
@@ -147,10 +185,19 @@ public class RadioMapHome_Activity extends Activity
     /**
      * Whenever this Activity gets paused (or destroyed).
      * Unregister Receivers.
+     * Disable Wifi.
+     * Disable Compass.
      */
     protected void onPause()
     {
         unregisterReceiver(mWifiReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(recordingReceiver);
+        compass.stop();
+
+        if (mWifiManager.isWifiEnabled())
+        {
+            mWifiManager.setWifiEnabled(false);
+        }
 
         super.onPause();
     }
@@ -158,16 +205,21 @@ public class RadioMapHome_Activity extends Activity
 
     /**
      * Handle the events for Button1.
-     * Gather information required via recordFingerprint() and store into the Database.
+     * If record is pressed, we want to retrieve the current Signals and store them into the Database.
+     * Therefore activate queryScanResults.
      */
     private void ButtonOneHandler()
     {
-        // TODO implement Fingerprint-Recording-Function
-        // recordFingerprint();
+        progress.setVisibility(View.VISIBLE);
+        btn1.setVisibility(View.GONE);
+        btn2.setVisibility(View.GONE);
 
-        Toast.makeText(getApplicationContext(),"Fingerprint Recorded",Toast.LENGTH_SHORT).show();
-        tv.setText("Press Next.");
-        recorded = true;
+        if (mWifiManager.startScan())
+        {
+            queryScanResults = true;
+        }
+
+        tv.setText("Recording Fingerprint...");
     }
 
 
@@ -209,7 +261,10 @@ public class RadioMapHome_Activity extends Activity
                 {
                     btn1.setVisibility(View.GONE);
                     btn2.setVisibility(View.GONE);
+
+                    // TODO Add an Activity for showing Database on the Device?
                     //btn3.setVisibility(View.VISIBLE);
+
                     btn4.setVisibility(View.VISIBLE);
 
                     map.setPosition(0,0,map.getWidth(),map.getHeight());
@@ -251,30 +306,19 @@ public class RadioMapHome_Activity extends Activity
 
     /**
      * Get Wifi-Data and store the Fingerprint.
-     * @return true, if record was successful | false, if record failed
      */
-    private boolean recordFingerprint()
+    private void recordFingerprint()
     {
-        mWifiManager.startScan();
+        int x    = (int)positions[posCtr][0];
+        int y    = (int)positions[posCtr][1];
+        String d = compass.getDir();
 
-        if (wifiReceived)
-        {
-            int x = (int)positions[posCtr][0];
-            int y = (int)positions[posCtr][1];
-            int d = 0;
+        Fingerprint currentFP = new Fingerprint(x,y,d,currentAPList);
 
-            currentFP = new Fingerprint(x,y,d,currentAPList);
+        Log.i("Fingerprint DATA", currentFP.toString());
 
-            //DH.saveFingerprint(currentFP);
-        }
-        else
-        {
-            return false;
-        }
-
-        wifiReceived = false;
-
-        return true;
+        // TODO Enable DB-Feature
+        //DH.saveFingerprint(currentFP);
     }
 
 
@@ -293,6 +337,7 @@ public class RadioMapHome_Activity extends Activity
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
+                // TODO Enable DB-Feature
                 //DH.clearDB();
                 dialog.cancel();
                 Toast.makeText(getApplicationContext(),"Database cleared",Toast.LENGTH_SHORT).show();
@@ -314,8 +359,8 @@ public class RadioMapHome_Activity extends Activity
 
     /**
      * A Local Wifi Receiver to handle incoming Wifi Signals.
-     * It retrieves the Data and extracts incoming MAC/RSSI-Information and automatically puts it
-     * into the Database.
+     * It sends out a Broadcast whenever asked for it via queryScanResults, if the current Signals
+     * should be stored into the Database.
      */
     class WifiReceiver extends BroadcastReceiver
     {
@@ -326,16 +371,20 @@ public class RadioMapHome_Activity extends Activity
 
             if (wifiScanList != null)
             {
-                wifiReceived = true;
-
-                ArrayList<APInfo> mAPList = new ArrayList<>();
-
-                for(int i = 0; i < wifiScanList.size(); i++)
+                if (queryScanResults)
                 {
-                    APInfo mAP = new APInfo(wifiScanList.get(i).BSSID, wifiScanList.get(i).level);
-                    mAPList.add(mAP);
+                    ArrayList<APInfo> mAPList = new ArrayList<>();
+
+                    for(int i = 0; i < wifiScanList.size(); i++)
+                    {
+                        APInfo mAP = new APInfo(wifiScanList.get(i).BSSID, wifiScanList.get(i).level);
+                        mAPList.add(mAP);
+                    }
+
+                    currentAPList = mAPList;
+
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(scanSuccess);
                 }
-                currentAPList = mAPList;
             }
         }
     }

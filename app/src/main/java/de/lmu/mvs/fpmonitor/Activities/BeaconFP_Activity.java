@@ -5,7 +5,9 @@ import android.os.Bundle;
 
 import de.lmu.mvs.fpmonitor.R;
 
-
+/**
+ * Placeholder for now.
+ */
 public class BeaconFP_Activity extends Activity
 {
 
