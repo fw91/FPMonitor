@@ -226,4 +226,198 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
         db.close();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public ArrayList<Fingerprint> getNorthFPs()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cr = db.query
+                (
+                        FINGERPRINT_TABLE,
+                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
+                        DIR + "='North'",
+                        null, null, null, null, null
+                );
+
+        ArrayList<Fingerprint> northFPs = new ArrayList<>();
+
+        Fingerprint fp;
+        int x,y;
+        String d;
+        ArrayList<APInfo> apInfos;
+
+        if (!tableIsEmpty())
+        {
+            if (cr != null)
+            {
+                cr.moveToFirst();
+            }
+
+            do
+            {
+                x       = Integer.parseInt(cr.getString(1));
+                y       = Integer.parseInt(cr.getString(2));
+                d       = cr.getString(3);
+                apInfos = getAPArray(cr.getString(4));
+
+                fp      = new Fingerprint (x,y,d,apInfos);
+
+                northFPs.add(fp);
+
+            } while (cr.moveToNext());
+        }
+
+        db.close();
+
+        return northFPs;
+    }
+
+    public ArrayList<Fingerprint> getEastFPs()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cr = db.query
+                (
+                        FINGERPRINT_TABLE,
+                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
+                        DIR + "='East'",
+                        null, null, null, null, null
+                );
+
+        ArrayList<Fingerprint> eastFPs = new ArrayList<>();
+
+        Fingerprint fp;
+        int x,y;
+        String d;
+        ArrayList<APInfo> apInfos;
+
+        if (!tableIsEmpty())
+        {
+            if (cr != null)
+            {
+                cr.moveToFirst();
+            }
+
+            do
+            {
+                x       = Integer.parseInt(cr.getString(1));
+                y       = Integer.parseInt(cr.getString(2));
+                d       = cr.getString(3);
+                apInfos = getAPArray(cr.getString(4));
+
+                fp      = new Fingerprint (x,y,d,apInfos);
+
+                eastFPs.add(fp);
+
+            } while (cr.moveToNext());
+        }
+
+        db.close();
+
+        return eastFPs;
+    }
+
+    public ArrayList<Fingerprint> getSouthFPs()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cr = db.query
+                (
+                        FINGERPRINT_TABLE,
+                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
+                        DIR + "='South'",
+                        null, null, null, null, null
+                );
+
+        ArrayList<Fingerprint> southFPs = new ArrayList<>();
+
+        Fingerprint fp;
+        int x,y;
+        String d;
+        ArrayList<APInfo> apInfos;
+
+        if (!tableIsEmpty())
+        {
+            if (cr != null)
+            {
+                cr.moveToFirst();
+            }
+
+            do
+            {
+                x       = Integer.parseInt(cr.getString(1));
+                y       = Integer.parseInt(cr.getString(2));
+                d       = cr.getString(3);
+                apInfos = getAPArray(cr.getString(4));
+
+                fp      = new Fingerprint (x,y,d,apInfos);
+
+                southFPs.add(fp);
+
+            } while (cr.moveToNext());
+        }
+
+        db.close();
+
+        return southFPs;
+    }
+
+    public ArrayList<Fingerprint> getWestFPs()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor cr = db.query
+                (
+                        FINGERPRINT_TABLE,
+                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
+                        DIR + "='West'",
+                        null, null, null, null, null
+                );
+
+        ArrayList<Fingerprint> westFPs = new ArrayList<>();
+
+        Fingerprint fp;
+        int x,y;
+        String d;
+        ArrayList<APInfo> apInfos;
+
+        if (!tableIsEmpty())
+        {
+            if (cr != null)
+            {
+                cr.moveToFirst();
+            }
+
+            do
+            {
+                x       = Integer.parseInt(cr.getString(1));
+                y       = Integer.parseInt(cr.getString(2));
+                d       = cr.getString(3);
+                apInfos = getAPArray(cr.getString(4));
+
+                fp      = new Fingerprint (x,y,d,apInfos);
+
+                westFPs.add(fp);
+
+            } while (cr.moveToNext());
+        }
+
+        db.close();
+
+        return westFPs;
+    }
 }

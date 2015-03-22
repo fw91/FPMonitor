@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:layout_below="@id/title"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="50dp"
         android:id="@+id/wlan_view"/>
 
     <TextView
@@ -52,7 +52,8 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:id="@+id/recordBtn"
-            android:text="@string/radioMap_recordBtn"/>
+            android:text="@string/radioMap_recordBtn"
+            android:visibility="gone"/>
 
         <Button
             android:layout_width="0dp"
@@ -69,9 +70,19 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="gone" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/compassTV"
+        android:textSize="35sp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:visibility="gone"/>
 
     <TableRow
         android:layout_alignParentBottom="true"
@@ -84,7 +95,8 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:id="@+id/showDB"
-            android:text="@string/radioMap_showBtn"/>
+            android:text="@string/radioMap_showBtn"
+            android:visibility="gone"/>
 
         <Button
             android:layout_width="0dp"
