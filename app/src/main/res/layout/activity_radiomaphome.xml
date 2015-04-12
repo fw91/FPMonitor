@@ -94,9 +94,8 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:id="@+id/showDB"
-            android:text="@string/radioMap_showBtn"
-            android:visibility="gone"/>
+            android:id="@+id/exportDB"
+            android:text="@string/radioMap_showBtn"/>
 
         <Button
             android:layout_width="0dp"

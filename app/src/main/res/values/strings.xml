@@ -16,7 +16,7 @@
     <string name="radioMap_title">Record Radio Map</string>
     <string name="radioMap_recordBtn">Record</string>
     <string name="radioMap_nextBtn">Start Recording</string>
-    <string name="radioMap_showBtn">Show DB</string>
+    <string name="radioMap_showBtn">Export DB</string>
     <string name="radioMap_deleteBtn">Delete DB</string>
 
 </resources>

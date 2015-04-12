@@ -30,6 +30,6 @@ public class APInfo
      */
     public String toString()
     {
-        return "mac="+mac+", rssi="+rssi;
+        return "MAC=" + mac + ", RSSI=" + rssi;
     }
 }

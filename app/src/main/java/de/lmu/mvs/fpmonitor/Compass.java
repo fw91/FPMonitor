@@ -1,21 +1,16 @@
 package de.lmu.mvs.fpmonitor;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.v4.content.LocalBroadcastManager;
 
 /**
  * A Very Simple Compass using Magnetometer and Accelerometer.
  */
 public class Compass implements SensorEventListener
 {
-    final static String COMPASS_UPDATE = "compass_updated";
-    Intent compassUpdate = new Intent(COMPASS_UPDATE);
-
     private SensorManager mSensorManager;
     private Sensor accelerometer;
     private Sensor magnetometer;
@@ -23,13 +18,12 @@ public class Compass implements SensorEventListener
     private float[] mGravity     = new float[3];
     private float[] mGeomagnetic = new float[3];
 
-    private String direction     = "";
-
-    private Context ctx;
+    private int direction;
 
 
     /**
-     * Main Constructor
+     * Main Constructor.
+     *
      * @param context Context from Activity calling
      */
     public Compass(Context context)
@@ -37,7 +31,6 @@ public class Compass implements SensorEventListener
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         accelerometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magnetometer   = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        this.ctx = context;
     }
 
 
@@ -65,7 +58,6 @@ public class Compass implements SensorEventListener
     {
         final float alpha = 0.97f;
         float azimuth;
-        String newDirection;
 
         synchronized (this)
         {
@@ -96,14 +88,15 @@ public class Compass implements SensorEventListener
                 azimuth = (float) Math.toDegrees(orientation[0]);
                 azimuth = (azimuth + 360) % 360;
 
+                direction = (int)azimuth;
+
+                /*
                 if (azimuth >= 315 || azimuth < 45)
                 {
                     newDirection = "N";
 
                     if (!direction.equals(newDirection))
                     {
-                        compassUpdate.putExtra("direction","North");
-                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(compassUpdate);
                         direction = "N";
                     }
                 }
@@ -113,8 +106,6 @@ public class Compass implements SensorEventListener
 
                     if (!direction.equals(newDirection))
                     {
-                        compassUpdate.putExtra("direction","East");
-                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(compassUpdate);
                         direction = "E";
                     }
                 }
@@ -124,8 +115,6 @@ public class Compass implements SensorEventListener
 
                     if (!direction.equals(newDirection))
                     {
-                        compassUpdate.putExtra("direction","South");
-                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(compassUpdate);
                         direction = "S";
                     }
                 }
@@ -135,23 +124,21 @@ public class Compass implements SensorEventListener
 
                     if (!direction.equals(newDirection))
                     {
-                        compassUpdate.putExtra("direction","West");
-                        LocalBroadcastManager.getInstance(ctx).sendBroadcast(compassUpdate);
                         direction = "W";
                     }
-                }
+                }*/
             }
         }
     }
 
 
     /**
-     * TODO Delete, only used in Testing_Activity
      * Retrieve direction the Phone is currently facing.
      * (North/East/South/West)
+     *
      * @return direction
      */
-    public String getDir()
+    public int getDir()
     {
         return this.direction;
     }

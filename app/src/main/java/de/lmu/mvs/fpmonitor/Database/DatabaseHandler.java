@@ -6,11 +6,20 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 
 public class DatabaseHandler extends SQLiteOpenHelper
@@ -20,23 +29,24 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
     private static final String FINGERPRINT_TABLE = "fingerprints";
 
-    private static final String FP_ID     = "_id";
-    private static final String X         = "x_coordinate";
-    private static final String Y         = "y_coordinate";
-    private static final String DIR       = "direction";
-    private static final String AP_INFO   = "ap_info";
+    private static final String FP_ID      = "_id";
+    private static final String X          = "x_coordinate";
+    private static final String Y          = "y_coordinate";
+    private static final String DIR        = "direction";
+    private static final String WIFI_SCANS = "wifi_scans";
 
     private static final String createFingerprintDB =
         "CREATE TABLE " + FINGERPRINT_TABLE +
-                   " (" + FP_ID   + " TEXT PRIMARY KEY, "
-                        + X       + " TEXT, "
-                        + Y       + " TEXT, "
-                        + DIR     + " TEXT, "
-                        + AP_INFO + " TEXT)";
+                   " (" + FP_ID      + " TEXT PRIMARY KEY, "
+                        + X          + " INTEGER, "
+                        + Y          + " INTEGER, "
+                        + DIR        + " INTEGER, "
+                        + WIFI_SCANS + " TEXT)";
 
 
     /**
-     * Main Constructor
+     * Main Constructor.
+     *
      * @param ctx Application Context
      */
     public DatabaseHandler(Context ctx)
@@ -62,7 +72,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
 
     /**
-     *  clear the Spot-Table and re-create an empty one
+     *  Clear the Spot-Table and re-create an empty one.
      */
     public void clearDB()
     {
@@ -74,7 +84,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
 
     /**
-     * Easy way of checking if there is any data inside the Table
+     * Easy way of checking if there is any data inside the Table.
+     *
      * @return true if Table is empty, false if there is Data inside
      */
     private boolean tableIsEmpty()
@@ -87,96 +98,21 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
 
     /**
-     * Initialize the Cursor for reading out the Database
-     * @return Cursor for accessing the Fingerprint-DB
-     */
-    private Cursor getCursor()
-    {
-        SQLiteDatabase db = getReadableDatabase();
-
-        String[] columns = {FP_ID, X, Y, DIR, AP_INFO};
-
-        return db.query(FINGERPRINT_TABLE, columns, null, null, null, null, null);
-    }
-
-
-    /**
-     * Convert an ArrayList of APInfos into a JSON-String for storing into theDatabase
-     * @param apInfos ArrayList of APInfo
-     * @return A JSON-Array of APInfo ArrayList for storing into DB
-     */
-    private JSONArray ArrayToJSON(ArrayList<APInfo> apInfos)
-    {
-        JSONArray apInfoArray = new JSONArray();
-        JSONObject apData;
-
-        for (int i=0; i<apInfos.size();i++)
-        {
-            try
-            {
-                apData = new JSONObject();
-
-                apData.put("mac",apInfos.get(i).mac);
-                apData.put("rssi",apInfos.get(i).rssi);
-
-                apInfoArray.put(apData);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return apInfoArray;
-    }
-
-
-    /**
-     * Converts the JSONArray-String from the Database into an APInfo ArrayList
-     * @param apInfoJSON JSON-String of Array from DB
-     * @return An ArrayList of APInfo for Fingerprint
-     */
-    private ArrayList<APInfo> getAPArray(String apInfoJSON)
-    {
-        ArrayList<APInfo> apInfos = new ArrayList<>();
-        JSONArray apInfoArray;
-        JSONObject apData;
-
-        try
-        {
-            apInfoArray = new JSONArray(apInfoJSON);
-
-            for (int i=0;i<apInfoArray.length();i++)
-            {
-                apData = apInfoArray.getJSONObject(i);
-
-                apInfos.add(new APInfo(apData.getString("mac"),apData.getInt("rssi")));
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        return apInfos;
-    }
-
-
-    /**
-     * Retrieve an ArrayList of all the Fingerprints stored
+     * Retrieve an ArrayList of all the Fingerprints stored.
+     *
      * @return An ArrayList of all Fingerprints stored
      */
     public ArrayList<Fingerprint> getFingerprints()
     {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cr = getCursor();
+        String[] columns = {FP_ID, X, Y, DIR, WIFI_SCANS};
+        Cursor cr = db.query(FINGERPRINT_TABLE, columns, null, null, null, null, null);
 
         ArrayList<Fingerprint> fingerprints = new ArrayList<>();
 
         Fingerprint fp;
-        int x,y;
-        String d;
-        ArrayList<APInfo> apInfos;
+        int x,y,d;
+        ArrayList<WifiScan> scans;
 
         if (!tableIsEmpty())
         {
@@ -187,18 +123,19 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
             do
             {
-                x       = Integer.parseInt(cr.getString(1));
-                y       = Integer.parseInt(cr.getString(2));
-                d       = cr.getString(3);
-                apInfos = getAPArray(cr.getString(4));
+                x       = cr.getInt(1);
+                y       = cr.getInt(2);
+                d       = cr.getInt(3);
+                scans   = getAPArray(cr.getString(4));
 
-                fp      = new Fingerprint (x,y,d,apInfos);
+                fp      = new Fingerprint (x,y,d,scans);
 
                 fingerprints.add(fp);
 
             } while (cr.moveToNext());
         }
 
+        cr.close();
         db.close();
 
         return fingerprints;
@@ -206,7 +143,89 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
 
     /**
-     * Save a new Fingerprint into the Database
+     * Retrieve an ArrayList of all the Fingerprints stored based on the Direction.
+     *
+     * @return An ArrayList of all Fingerprints stored
+     */
+    public ArrayList<Fingerprint> getFingerprints(int direction)
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cr;
+
+        int minDirection, maxDirection;
+
+        if (direction < 50)
+        {
+            minDirection = 360 + direction - 50;
+            maxDirection = direction + 50;
+
+            cr = db.query
+                    (
+                            FINGERPRINT_TABLE,
+                            new String[] {FP_ID, X, Y, DIR, WIFI_SCANS},
+                            DIR + " > " + minDirection + " OR " + DIR + " < " + maxDirection,
+                            null, null, null, null, null
+                    );
+        }
+        else if (310 < direction)
+        {
+            minDirection = direction - 50;
+            maxDirection = direction - 360 + 50;
+
+            cr = db.query
+                    (
+                            FINGERPRINT_TABLE,
+                            new String[] {FP_ID, X, Y, DIR, WIFI_SCANS},
+                            DIR + " > " + minDirection + " OR " + DIR + " < " + maxDirection,
+                            null, null, null, null, null
+                    );
+        }
+        else
+        {
+            minDirection = direction - 50;
+            maxDirection = direction + 50;
+
+            cr = db.query
+                    (
+                            FINGERPRINT_TABLE,
+                            new String[] {FP_ID, X, Y, DIR, WIFI_SCANS},
+                            DIR + " BETWEEN " + minDirection + " AND " + maxDirection,
+                            null, null, null, null, null
+                    );
+        }
+
+        ArrayList<Fingerprint> fingerprints = new ArrayList<>();
+
+        Fingerprint fp;
+        int x,y,d;
+        ArrayList<WifiScan> scans;
+
+        if (cr.moveToFirst())
+        {
+            do
+            {
+                x       = cr.getInt(1);
+                y       = cr.getInt(2);
+                d       = cr.getInt(3);
+                scans   = getAPArray(cr.getString(4));
+
+                fp      = new Fingerprint (x,y,d,scans);
+
+                fingerprints.add(fp);
+
+            } while (cr.moveToNext());
+        }
+
+        cr.close();
+        db.close();
+
+        return fingerprints;
+    }
+
+
+    /**
+     * Save a new Fingerprint into the Database.
+     *
      * @param f The Fingerprint to be saved
      */
     public void saveFingerprint(Fingerprint f)
@@ -216,11 +235,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
         ContentValues fingerprintValues = new ContentValues();
 
-        fingerprintValues.put(FP_ID,   "Position." + (pos+1));
-        fingerprintValues.put(X,       Integer.toString(f.x_coordinate));
-        fingerprintValues.put(Y,       Integer.toString(f.y_coordinate));
-        fingerprintValues.put(DIR,     f.direction);
-        fingerprintValues.put(AP_INFO, ArrayToJSON(f.apList).toString());
+        fingerprintValues.put(FP_ID,      "Fingerprint." + (pos+1));
+        fingerprintValues.put(X,          f.x_coordinate);
+        fingerprintValues.put(Y,          f.y_coordinate);
+        fingerprintValues.put(DIR,        f.direction);
+        fingerprintValues.put(WIFI_SCANS, ArrayToJSON(f.scans).toString());
 
         db.insert(FINGERPRINT_TABLE,null,fingerprintValues);
 
@@ -229,195 +248,130 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    public ArrayList<Fingerprint> getNorthFPs()
+    /**
+     * Convert an ArrayList of WifiScans into a JSON-String for storing into the Database.
+     *
+     * @param wifiScans ArrayList of WifiScans
+     * @return A JSON-Array of WifiScan-ArrayList for storing into DB
+     */
+    private JSONArray ArrayToJSON(ArrayList<WifiScan> wifiScans)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        JSONArray wifiScanArray = new JSONArray();
 
-        Cursor cr = db.query
-                (
-                        FINGERPRINT_TABLE,
-                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
-                        DIR + "='North'",
-                        null, null, null, null, null
-                );
+        JSONObject scanData, apData;
+        JSONArray apInfoArray;
 
-        ArrayList<Fingerprint> northFPs = new ArrayList<>();
-
-        Fingerprint fp;
-        int x,y;
-        String d;
-        ArrayList<APInfo> apInfos;
-
-        if (!tableIsEmpty())
+        for (int i=0;i<wifiScans.size();i++)
         {
-            if (cr != null)
+            try
             {
-                cr.moveToFirst();
+                scanData    = new JSONObject();
+                apInfoArray = new JSONArray();
+
+                for (int j=0;j<wifiScans.get(i).apInfoList.size();j++)
+                {
+                    apData = new JSONObject();
+
+                    apData.put("mac",  wifiScans.get(i).apInfoList.get(j).mac);
+                    apData.put("rssi", wifiScans.get(i).apInfoList.get(j).rssi);
+
+                    apInfoArray.put(apData);
+                }
+
+                scanData.put("scan_id", wifiScans.get(i).id);
+                scanData.put("ap_list", apInfoArray);
+
+                wifiScanArray.put(scanData);
             }
-
-            do
+            catch (Exception e)
             {
-                x       = Integer.parseInt(cr.getString(1));
-                y       = Integer.parseInt(cr.getString(2));
-                d       = cr.getString(3);
-                apInfos = getAPArray(cr.getString(4));
-
-                fp      = new Fingerprint (x,y,d,apInfos);
-
-                northFPs.add(fp);
-
-            } while (cr.moveToNext());
+                e.printStackTrace();
+            }
         }
 
-        db.close();
-
-        return northFPs;
+        return wifiScanArray;
     }
 
-    public ArrayList<Fingerprint> getEastFPs()
+
+    /**
+     * Converts the JSONArray-String from the Database into an APInfo ArrayList.
+     *
+     * @param wifiScanJSON JSON-String of Array from DB
+     * @return An ArrayList of APInfo for Fingerprint
+     */
+    private ArrayList<WifiScan> getAPArray(String wifiScanJSON)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<WifiScan> scans = new ArrayList<>();
+        ArrayList<APInfo> apInfoList;
+        JSONArray wifiScanArray, apInfoArray;
+        JSONObject scanData;
 
-        Cursor cr = db.query
-                (
-                        FINGERPRINT_TABLE,
-                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
-                        DIR + "='East'",
-                        null, null, null, null, null
-                );
-
-        ArrayList<Fingerprint> eastFPs = new ArrayList<>();
-
-        Fingerprint fp;
-        int x,y;
-        String d;
-        ArrayList<APInfo> apInfos;
-
-        if (!tableIsEmpty())
+        try
         {
-            if (cr != null)
+            wifiScanArray = new JSONArray(wifiScanJSON);
+
+            for (int i=0;i<wifiScanArray.length();i++)
             {
-                cr.moveToFirst();
+                scanData = wifiScanArray.getJSONObject(i);
+
+                apInfoList = new ArrayList<>();
+
+                apInfoArray = scanData.getJSONArray("ap_list");
+
+                for (int j=0;j<apInfoArray.length();j++)
+                {
+                    apInfoList.add(new APInfo(apInfoArray.getJSONObject(j).getString("mac"),
+                                              apInfoArray.getJSONObject(j).getInt("rssi")));
+                }
+
+                scans.add(new WifiScan(scanData.getInt("scan_id"), apInfoList));
             }
-
-            do
-            {
-                x       = Integer.parseInt(cr.getString(1));
-                y       = Integer.parseInt(cr.getString(2));
-                d       = cr.getString(3);
-                apInfos = getAPArray(cr.getString(4));
-
-                fp      = new Fingerprint (x,y,d,apInfos);
-
-                eastFPs.add(fp);
-
-            } while (cr.moveToNext());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
 
-        db.close();
-
-        return eastFPs;
+        return scans;
     }
 
-    public ArrayList<Fingerprint> getSouthFPs()
+
+    /**
+     * Export current Version of the Database.
+     * @param ctx Application Context
+     */
+    public void exportDB(Context ctx)
     {
-        SQLiteDatabase db = getReadableDatabase();
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat df = new SimpleDateFormat("ddMM-HHmm", Locale.GERMANY);
+        String dateAppendix = df.format(c.getTime());
 
-        Cursor cr = db.query
-                (
-                        FINGERPRINT_TABLE,
-                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
-                        DIR + "='South'",
-                        null, null, null, null, null
-                );
-
-        ArrayList<Fingerprint> southFPs = new ArrayList<>();
-
-        Fingerprint fp;
-        int x,y;
-        String d;
-        ArrayList<APInfo> apInfos;
-
-        if (!tableIsEmpty())
+        try
         {
-            if (cr != null)
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            if (sd.canWrite())
             {
-                cr.moveToFirst();
+                String currentDBPath = "//data//de.lmu.mvs.fpmonitor//databases//fpDatabase";
+                String backupDBPath = "fpDatabase_"+dateAppendix+".db";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists())
+                {
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    Toast.makeText(ctx,"Export Successful",Toast.LENGTH_SHORT).show();
+                    src.close();
+                    dst.close();
+                }
             }
-
-            do
-            {
-                x       = Integer.parseInt(cr.getString(1));
-                y       = Integer.parseInt(cr.getString(2));
-                d       = cr.getString(3);
-                apInfos = getAPArray(cr.getString(4));
-
-                fp      = new Fingerprint (x,y,d,apInfos);
-
-                southFPs.add(fp);
-
-            } while (cr.moveToNext());
         }
-
-        db.close();
-
-        return southFPs;
-    }
-
-    public ArrayList<Fingerprint> getWestFPs()
-    {
-        SQLiteDatabase db = getReadableDatabase();
-
-        Cursor cr = db.query
-                (
-                        FINGERPRINT_TABLE,
-                        new String[] {FP_ID, X, Y, DIR, AP_INFO},
-                        DIR + "='West'",
-                        null, null, null, null, null
-                );
-
-        ArrayList<Fingerprint> westFPs = new ArrayList<>();
-
-        Fingerprint fp;
-        int x,y;
-        String d;
-        ArrayList<APInfo> apInfos;
-
-        if (!tableIsEmpty())
+        catch (Exception e)
         {
-            if (cr != null)
-            {
-                cr.moveToFirst();
-            }
-
-            do
-            {
-                x       = Integer.parseInt(cr.getString(1));
-                y       = Integer.parseInt(cr.getString(2));
-                d       = cr.getString(3);
-                apInfos = getAPArray(cr.getString(4));
-
-                fp      = new Fingerprint (x,y,d,apInfos);
-
-                westFPs.add(fp);
-
-            } while (cr.moveToNext());
+            Toast.makeText(ctx,"Export Failed",Toast.LENGTH_SHORT).show();
         }
-
-        db.close();
-
-        return westFPs;
     }
 }

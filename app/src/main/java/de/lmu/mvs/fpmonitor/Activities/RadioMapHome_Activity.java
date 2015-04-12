@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
+import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -26,6 +26,7 @@ import de.lmu.mvs.fpmonitor.Compass;
 import de.lmu.mvs.fpmonitor.Database.APInfo;
 import de.lmu.mvs.fpmonitor.Database.DatabaseHandler;
 import de.lmu.mvs.fpmonitor.Database.Fingerprint;
+import de.lmu.mvs.fpmonitor.Database.WifiScan;
 import de.lmu.mvs.fpmonitor.MapView;
 import de.lmu.mvs.fpmonitor.R;
 
@@ -43,7 +44,6 @@ public class RadioMapHome_Activity extends Activity
     ProgressBar progress;
 
     final static String SCAN_SUCCESSFUL = "scan_successful";
-    final static String COMPASS_UPDATE = "compass_updated";
 
     Intent scanSuccess = new Intent(SCAN_SUCCESSFUL);
 
@@ -59,11 +59,14 @@ public class RadioMapHome_Activity extends Activity
     private WifiReceiver mWifiReceiver;
 
     private Compass compass;
-    private String direction;
-    private String[] directions = {"North","East","South","West"};
+    private int direction;
     private int dirCtr;
 
-    private ArrayList<APInfo> currentAPList;
+    private ArrayList<WifiScan> scansFinal;
+    private int scanCtr;
+
+    public static final String RESUME_PREFERENCES = "ResumePreferences";
+    SharedPreferences resume_preferences;
 
 
     // This is required to get up-to-date ScanResults
@@ -72,22 +75,31 @@ public class RadioMapHome_Activity extends Activity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            // TODO Add some Exit-Strategy if there are no Wifi Signals to receive. Necessary??
-
             if (started)
             {
-                progress.setVisibility(View.GONE);
-                queryScanResults = false;
-
-                if (!direction.equals(directions[dirCtr]))
+                if (scanCtr < 20)
                 {
-                    tv.setText("Record failed. Try again. \nPlease point Your Device " + directions[dirCtr] + ".");
-                    btn1.setVisibility(View.VISIBLE);
+                    tv.setText("Recording Fingerprint... (" + scanCtr + "/20)");
+
+                    if (mWifiManager.startScan())
+                    {
+                        queryScanResults = true;
+                        scanCtr++;
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(),"No Wifi Signal!",Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else
                 {
-                    compassTv.setTextColor(Color.RED);
+                    queryScanResults = false;
+
+                    progress.setVisibility(View.GONE);
+
                     recordFingerprint();
+
+                    scanCtr = 1;
 
                     if (dirCtr == 3)
                     {
@@ -96,39 +108,16 @@ public class RadioMapHome_Activity extends Activity
                         tv.setText("Record finished. Press Next.");
                         btn1.setVisibility(View.GONE);
                         btn2.setVisibility(View.VISIBLE);
-                        compassTv.setVisibility(View.GONE);
                     }
                     else
                     {
                         dirCtr++;
 
-                        tv.setText("Record successful. \nPoint Your Device " + directions[dirCtr] + ".");
+                        tv.setText("Record successful. \nTurn Around. (" + (dirCtr+1) + "/4 Directions)");
                         btn1.setVisibility(View.VISIBLE);
                     }
                 }
             }
-        }
-    };
-
-
-    // This is required to get up-to-date CompassDirection (small delay)
-    BroadcastReceiver compassReceiver = new BroadcastReceiver()
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            direction = intent.getStringExtra("direction");
-
-            if (direction.equals(directions[dirCtr]))
-            {
-                compassTv.setTextColor(Color.GREEN);
-            }
-            else
-            {
-                compassTv.setTextColor(Color.RED);
-            }
-
-            compassTv.setText(direction);
         }
     };
 
@@ -139,23 +128,24 @@ public class RadioMapHome_Activity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_radiomaphome);
 
+        // Load Shared Preferences
+        resume_preferences = getSharedPreferences(RESUME_PREFERENCES, MODE_PRIVATE);
+
         // Initialize Layout
         map       = (MapView)findViewById(R.id.wlan_view);
         tv        = (TextView)findViewById(R.id.recordTV);
         btn1      = (Button)findViewById(R.id.recordBtn);
         btn2      = (Button)findViewById(R.id.nextBtn);
-        btn3      = (Button)findViewById(R.id.showDB);
+        btn3      = (Button)findViewById(R.id.exportDB);
         btn4      = (Button)findViewById(R.id.deleteDB);
         progress  = (ProgressBar)findViewById(R.id.progress);
         compassTv = (TextView)findViewById(R.id.compassTV);
 
         tv.setText("Press the Button to start recording.");
         btn1.setVisibility(View.GONE);
-        btn3.setVisibility(View.GONE);
 
         // Initialize Coordinates
         positions = initCoordinates();
-        posCtr    = 0;
 
         // Initialize Flags
         started          = false;
@@ -167,10 +157,10 @@ public class RadioMapHome_Activity extends Activity
         // Initialize Wifi
         mWifiManager  = (WifiManager)getSystemService(WIFI_SERVICE);
         mWifiReceiver = new WifiReceiver();
+        scanCtr       = 1;
 
         // Initialize Compass
-        compass = new Compass(getApplicationContext());
-        dirCtr = 0;
+        compass = new Compass(this);
 
         // Set OnClickListeners
         btn1.setOnClickListener(new View.OnClickListener()
@@ -188,6 +178,15 @@ public class RadioMapHome_Activity extends Activity
             public void onClick(View v)
             {
                 ButtonTwoHandler();
+            }
+        });
+
+        btn3.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                DH.exportDB(getApplicationContext());
             }
         });
 
@@ -218,9 +217,6 @@ public class RadioMapHome_Activity extends Activity
     }
 
 
-    // TODO Add onStart() and onDestroy()?? Necessary?
-
-
     /**
      * Whenever this Activity gets resumed (or started).
      * Make sure Wifi is enabled.
@@ -236,7 +232,9 @@ public class RadioMapHome_Activity extends Activity
 
         registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         LocalBroadcastManager.getInstance(this).registerReceiver(recordingReceiver, new IntentFilter(SCAN_SUCCESSFUL));
-        LocalBroadcastManager.getInstance(this).registerReceiver(compassReceiver, new IntentFilter(COMPASS_UPDATE));
+
+        posCtr = resume_preferences.getInt("PosCtr",0);
+        dirCtr = resume_preferences.getInt("DirCtr",0);
 
         compass.start();
 
@@ -259,7 +257,9 @@ public class RadioMapHome_Activity extends Activity
 
         unregisterReceiver(mWifiReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(recordingReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(compassReceiver);
+
+        resume_preferences.edit().putInt("PosCtr",posCtr).apply();
+        resume_preferences.edit().putInt("DirCtr",dirCtr).apply();
 
         compass.stop();
 
@@ -279,7 +279,7 @@ public class RadioMapHome_Activity extends Activity
             queryScanResults = true;
         }
 
-        tv.setText("Recording Fingerprint...");
+        tv.setText("...");
         btn1.setVisibility(View.GONE);
         btn2.setVisibility(View.GONE);
         progress.setVisibility(View.VISIBLE);
@@ -296,13 +296,12 @@ public class RadioMapHome_Activity extends Activity
     {
         if (!started)
         {
-            tv.setText("Walk to the Position and press Record. \nPoint Your Device North.");
+            tv.setText("Walk to the Position and press Record.");
             btn1.setVisibility(View.VISIBLE);
             btn2.setText("Next");
             btn2.setVisibility(View.GONE);
             btn3.setVisibility(View.GONE);
             btn4.setVisibility(View.GONE);
-            compassTv.setVisibility(View.VISIBLE);
 
             map.setPosition(positions[posCtr][0],positions[posCtr][1],map.getWidth(),map.getHeight());
             map.invalidate();
@@ -316,13 +315,11 @@ public class RadioMapHome_Activity extends Activity
                 map.setPosition(0,0,map.getWidth(),map.getHeight());
                 map.invalidate();
 
-                tv.setText("Recording finished.");
+                tv.setText("Recording finished.\nYou have to delete the DB first, if You want to record again.");
                 btn1.setVisibility(View.GONE);
                 btn2.setVisibility(View.GONE);
-                // TODO Add an Activity for showing Database on the Device? Alternative: Export DB?
-                //btn3.setVisibility(View.VISIBLE);
+                btn3.setVisibility(View.VISIBLE);
                 btn4.setVisibility(View.VISIBLE);
-                compassTv.setVisibility(View.GONE);
             }
             else
             {
@@ -331,10 +328,9 @@ public class RadioMapHome_Activity extends Activity
                 map.setPosition(positions[posCtr][0],positions[posCtr][1],map.getWidth(),map.getHeight());
                 map.invalidate();
 
-                tv.setText("Walk to the Position and press Record. \nPoint Your Device North.");
+                tv.setText("Walk to the Position and press Record.");
                 btn1.setVisibility(View.VISIBLE);
                 btn2.setVisibility(View.GONE);
-                compassTv.setVisibility(View.VISIBLE);
             }
         }
     }
@@ -342,6 +338,7 @@ public class RadioMapHome_Activity extends Activity
 
     /**
      * Initialize the set of Coordinates to be printed on the Map.
+     *
      * @return an Array of Coordinates
      */
     private float[][] initCoordinates()
@@ -369,13 +366,12 @@ public class RadioMapHome_Activity extends Activity
         int x    = (int)positions[posCtr][0];
         int y    = (int)positions[posCtr][1];
 
-        Fingerprint currentFP = new Fingerprint(x,y,direction,currentAPList);
+        direction = direction/scanCtr;
+
+        Fingerprint currentFP = new Fingerprint(x, y, direction, scansFinal);
 
         DH.saveFingerprint(currentFP);
-
-        //Log.i("Fingerprint DATA", currentFP.toString());
     }
-
 
 
     /**
@@ -393,6 +389,8 @@ public class RadioMapHome_Activity extends Activity
             public void onClick(DialogInterface dialog, int which)
             {
                 DH.clearDB();
+                resume_preferences.edit().putInt("PosCtr",0).apply();
+                resume_preferences.edit().putInt("DirCtr",0).apply();
                 dialog.cancel();
                 Toast.makeText(getApplicationContext(),"Database cleared",Toast.LENGTH_SHORT).show();
             }
@@ -427,15 +425,23 @@ public class RadioMapHome_Activity extends Activity
             {
                 if (queryScanResults)
                 {
-                    ArrayList<APInfo> mAPList = new ArrayList<>();
+                    if (scanCtr == 1)
+                    {
+                        scansFinal = new ArrayList<>();
+                        direction = 0;
+                    }
+
+                    ArrayList<APInfo> tempAPList = new ArrayList<>();
+
+                    direction += compass.getDir();
 
                     for(int i = 0; i < wifiScanList.size(); i++)
                     {
-                        APInfo mAP = new APInfo(wifiScanList.get(i).BSSID, wifiScanList.get(i).level);
-                        mAPList.add(mAP);
+                        APInfo tempAP = new APInfo(wifiScanList.get(i).BSSID, wifiScanList.get(i).level);
+                        tempAPList.add(tempAP);
                     }
 
-                    currentAPList = mAPList;
+                    scansFinal.add(new WifiScan(scanCtr, tempAPList));
 
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(scanSuccess);
                 }

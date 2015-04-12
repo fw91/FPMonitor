@@ -7,14 +7,14 @@ import java.util.ArrayList;
  * Containing:
  * X/Y-Coordinates for the map.
  * Direction the Device was/is/should be facing.
- * An ArrayList of APInformation.
+ * An ArrayList of Scans.
  */
 public class Fingerprint
 {
     public int x_coordinate;
     public int y_coordinate;
-    public String direction;
-    public ArrayList<APInfo> apList;
+    public int direction;
+    public ArrayList<WifiScan> scans;
 
 
     /**
@@ -22,14 +22,14 @@ public class Fingerprint
      * @param x X-Coordinate
      * @param y Y-Coordinate
      * @param d Direction
-     * @param apList ArrayList of APInformation
+     * @param scans ArrayList of WifiScans
      */
-    public Fingerprint(int x, int y, String d, ArrayList<APInfo> apList)
+    public Fingerprint(int x, int y, int d, ArrayList<WifiScan> scans)
     {
         this.x_coordinate = x;
         this.y_coordinate = y;
         this.direction    = d;
-        this.apList       = apList;
+        this.scans        = scans;
     }
 
 
@@ -39,11 +39,13 @@ public class Fingerprint
      */
     public String toString()
     {
-        String apInformation = "";
-        for(int i=0;i<apList.size();i++)
+        String Scans = "";
+
+        for(int i=0;i<scans.size();i++)
         {
-            apInformation += "AP."+(i+1)+": "+apList.get(i).toString()+"\n";
+            Scans += scans.get(i).toString()+"\n";
         }
-        return "Fingerprint: X/Y="+x_coordinate+"/"+y_coordinate+", Dir="+direction+"\n"+apInformation;
+
+        return "Fingerprint-Data: \nX/Y = " + x_coordinate + "/" + y_coordinate + ", \nDir = " + direction + "\n" + Scans;
     }
 }
