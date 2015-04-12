@@ -77,14 +77,11 @@ public class RadioMapHome_Activity extends Activity
         {
             if (started)
             {
-                if (scanCtr < 20)
+                if (scanCtr <= 20)
                 {
-                    tv.setText("Recording Fingerprint... (" + scanCtr + "/20)");
-
                     if (mWifiManager.startScan())
                     {
                         queryScanResults = true;
-                        scanCtr++;
                     }
                     else
                     {
@@ -431,6 +428,8 @@ public class RadioMapHome_Activity extends Activity
                         direction = 0;
                     }
 
+                    tv.setText("Recording Fingerprint... (" + scanCtr + "/20)");
+
                     ArrayList<APInfo> tempAPList = new ArrayList<>();
 
                     direction += compass.getDir();
@@ -442,6 +441,8 @@ public class RadioMapHome_Activity extends Activity
                     }
 
                     scansFinal.add(new WifiScan(scanCtr, tempAPList));
+
+                    scanCtr++;
 
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(scanSuccess);
                 }
