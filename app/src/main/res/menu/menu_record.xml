@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".RadioMapHome_Activity">
+
+<item
+    android:id="@+id/get_posCtr"
+    android:title="Get Position"
+    app:showAsAction="always"/>
+
+<item
+    android:id="@+id/set_posCtr"
+    android:title="Set Position"
+    app:showAsAction="always"/>
+
+<item
+    android:id="@+id/exp_db"
+    android:title="Export DB"
+    app:showAsAction="always"/>
+
+<item
+    android:id="@+id/del_db"
+    android:title="Delete DB"
+    app:showAsAction="always"/>
+
+</menu>

@@ -59,8 +59,8 @@ public class Compass implements SensorEventListener
         final float alpha = 0.97f;
         float azimuth;
 
-        synchronized (this)
-        {
+        //synchronized (this)
+        //{
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
             {
                 mGravity[0] = alpha * mGravity[0] + (1 - alpha) * event.values[0];
@@ -127,7 +127,7 @@ public class Compass implements SensorEventListener
                         direction = "W";
                     }
                 }*/
-            }
+            //}
         }
     }
 

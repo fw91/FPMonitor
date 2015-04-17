@@ -235,7 +235,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
 
         ContentValues fingerprintValues = new ContentValues();
 
-        fingerprintValues.put(FP_ID,      "Fingerprint." + (pos+1));
+        fingerprintValues.put(FP_ID,      (pos+1));
         fingerprintValues.put(X,          f.x_coordinate);
         fingerprintValues.put(Y,          f.y_coordinate);
         fingerprintValues.put(DIR,        f.direction);

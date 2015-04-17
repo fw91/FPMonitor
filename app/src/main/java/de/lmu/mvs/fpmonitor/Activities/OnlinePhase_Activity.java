@@ -24,7 +24,7 @@ import de.lmu.mvs.fpmonitor.R;
  * This Activity will show Your current Position on a floor Plan.
  * It is necessary to Record Your Database first, so there is data to evaluate.
  */
-public class FingerprintingHome_Activity extends Activity
+public class OnlinePhase_Activity extends Activity
 {
     MapView map;
 
@@ -42,7 +42,7 @@ public class FingerprintingHome_Activity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fphome);
+        setContentView(R.layout.activity_onlinephase);
 
         map                = (MapView)findViewById(R.id.wlan_view);
 

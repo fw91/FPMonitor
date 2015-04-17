@@ -1,6 +1,5 @@
 package de.lmu.mvs.fpmonitor.Activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -8,13 +7,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBarActivity;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,11 +41,11 @@ import de.lmu.mvs.fpmonitor.R;
  * The Record-Button collects all necessary data and stores it into the Database.
  * The Next-Button moves to the next Position.
  */
-public class RadioMapHome_Activity extends Activity
+public class OfflinePhase_Activity extends ActionBarActivity
 {
     MapView map;
-    TextView tv, compassTv;
-    Button btn1, btn2, btn3, btn4;
+    TextView tv;
+    Button btn1, btn2;
     ProgressBar progress;
 
     final static String SCAN_SUCCESSFUL = "scan_successful";
@@ -65,9 +70,6 @@ public class RadioMapHome_Activity extends Activity
     private ArrayList<WifiScan> scansFinal;
     private int scanCtr;
 
-    public static final String RESUME_PREFERENCES = "ResumePreferences";
-    SharedPreferences resume_preferences;
-
 
     // This is required to get up-to-date ScanResults
     BroadcastReceiver recordingReceiver = new BroadcastReceiver()
@@ -82,10 +84,6 @@ public class RadioMapHome_Activity extends Activity
                     if (mWifiManager.startScan())
                     {
                         queryScanResults = true;
-                    }
-                    else
-                    {
-                        Toast.makeText(getApplicationContext(),"No Wifi Signal!",Toast.LENGTH_SHORT).show();
                     }
                 }
                 else
@@ -123,26 +121,22 @@ public class RadioMapHome_Activity extends Activity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_radiomaphome);
-
-        // Load Shared Preferences
-        resume_preferences = getSharedPreferences(RESUME_PREFERENCES, MODE_PRIVATE);
+        setContentView(R.layout.activity_offlinephase);
 
         // Initialize Layout
         map       = (MapView)findViewById(R.id.wlan_view);
         tv        = (TextView)findViewById(R.id.recordTV);
         btn1      = (Button)findViewById(R.id.recordBtn);
         btn2      = (Button)findViewById(R.id.nextBtn);
-        btn3      = (Button)findViewById(R.id.exportDB);
-        btn4      = (Button)findViewById(R.id.deleteDB);
         progress  = (ProgressBar)findViewById(R.id.progress);
-        compassTv = (TextView)findViewById(R.id.compassTV);
 
         tv.setText("Press the Button to start recording.");
         btn1.setVisibility(View.GONE);
 
         // Initialize Coordinates
         positions = initCoordinates();
+        dirCtr    = 0;
+        posCtr    = 0;
 
         // Initialize Flags
         started          = false;
@@ -158,6 +152,8 @@ public class RadioMapHome_Activity extends Activity
 
         // Initialize Compass
         compass = new Compass(this);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Set OnClickListeners
         btn1.setOnClickListener(new View.OnClickListener()
@@ -178,39 +174,77 @@ public class RadioMapHome_Activity extends Activity
             }
         });
 
-        btn3.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                DH.exportDB(getApplicationContext());
-            }
-        });
-
-        btn4.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                clearDatabaseDialog();
-            }
-        });
-
 
         /*
-         * A way of getting all the coordinates needed for the Database
+         * Used for getting all the coordinates needed for the Database.
          *
-        map.setOnTouchListener(new View.OnTouchListener() {
+        map.setOnTouchListener(new View.OnTouchListener()
+        {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.i("Coords","X="+event.getX()+" Y="+event.getY());
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                Log.i("Coords", "X=" + event.getX() + " Y=" + event.getY());
                 map.setPosition(event.getX(),event.getY(),map.getWidth(),map.getHeight());
                 map.invalidate();
-                return false;
             }
         });
          *
          */
+
+
+        /*
+         * Used for checking if Coordinates were set up correctly.
+         */
+        map.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                map.setPosition(positions[posCtr][0],positions[posCtr][1],map.getWidth(),map.getHeight());
+                map.invalidate();
+
+                if (posCtr < positions.length-1)
+                {
+                    posCtr++;
+                }
+                return false;
+            }
+        });
+         /*
+         */
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_record, menu);
+
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.get_posCtr:
+                Toast.makeText(getApplicationContext(),"Current Pos= " + (posCtr+1) + "/" + positions.length, Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.set_posCtr:
+                setPositionDialog();
+                break;
+            case R.id.exp_db:
+                DH.exportDB(getApplicationContext());
+                break;
+            case R.id.del_db:
+                clearDatabaseDialog();
+                break;
+            default:
+                break;
+        }
+        return true;
     }
 
 
@@ -229,9 +263,6 @@ public class RadioMapHome_Activity extends Activity
 
         registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         LocalBroadcastManager.getInstance(this).registerReceiver(recordingReceiver, new IntentFilter(SCAN_SUCCESSFUL));
-
-        posCtr = resume_preferences.getInt("PosCtr",0);
-        dirCtr = resume_preferences.getInt("DirCtr",0);
 
         compass.start();
 
@@ -254,9 +285,6 @@ public class RadioMapHome_Activity extends Activity
 
         unregisterReceiver(mWifiReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(recordingReceiver);
-
-        resume_preferences.edit().putInt("PosCtr",posCtr).apply();
-        resume_preferences.edit().putInt("DirCtr",dirCtr).apply();
 
         compass.stop();
 
@@ -297,8 +325,6 @@ public class RadioMapHome_Activity extends Activity
             btn1.setVisibility(View.VISIBLE);
             btn2.setText("Next");
             btn2.setVisibility(View.GONE);
-            btn3.setVisibility(View.GONE);
-            btn4.setVisibility(View.GONE);
 
             map.setPosition(positions[posCtr][0],positions[posCtr][1],map.getWidth(),map.getHeight());
             map.invalidate();
@@ -312,11 +338,9 @@ public class RadioMapHome_Activity extends Activity
                 map.setPosition(0,0,map.getWidth(),map.getHeight());
                 map.invalidate();
 
-                tv.setText("Recording finished.\nYou have to delete the DB first, if You want to record again.");
+                tv.setText("Recording finished.");
                 btn1.setVisibility(View.GONE);
                 btn2.setVisibility(View.GONE);
-                btn3.setVisibility(View.VISIBLE);
-                btn4.setVisibility(View.VISIBLE);
             }
             else
             {
@@ -330,28 +354,6 @@ public class RadioMapHome_Activity extends Activity
                 btn2.setVisibility(View.GONE);
             }
         }
-    }
-
-
-    /**
-     * Initialize the set of Coordinates to be printed on the Map.
-     *
-     * @return an Array of Coordinates
-     */
-    private float[][] initCoordinates()
-    {
-        float[][] homeCoordinates =
-                {{57,85},{123,85},{57,139},{123,139},                         // Room1
-                 {41,203},{107,203},{41,255},{107,255},                       // Room2
-                 {254,33},                                                    // Room3
-                 {220,83},{220,136},{220,184},                                // Room4 etc.
-                 {177,249},
-                 {236,249},
-                 {308,50},{381,50},{308,125},{381,125},
-                 {456,58},{456,120},
-                 {302,203},{376,203},{445,203},{302,252},{376,252},{445,252}};
-
-        return homeCoordinates;
     }
 
 
@@ -386,8 +388,6 @@ public class RadioMapHome_Activity extends Activity
             public void onClick(DialogInterface dialog, int which)
             {
                 DH.clearDB();
-                resume_preferences.edit().putInt("PosCtr",0).apply();
-                resume_preferences.edit().putInt("DirCtr",0).apply();
                 dialog.cancel();
                 Toast.makeText(getApplicationContext(),"Database cleared",Toast.LENGTH_SHORT).show();
             }
@@ -403,6 +403,56 @@ public class RadioMapHome_Activity extends Activity
         });
 
         builder.show();
+    }
+
+
+    /**
+     * AlertDialog for setting the current Position.
+     */
+    private void setPositionDialog()
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setTitle("Set Position");
+        alert.setMessage("Insert Number");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        alert.setView(input);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                String value = input.getText().toString();
+                if (Integer.parseInt(value)<0 || Integer.parseInt(value)>positions.length-1)
+                {
+                    Toast.makeText(getApplicationContext(),"Error, Position does not exist!",Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    posCtr = Integer.parseInt(value);
+                    dirCtr = 0;
+
+                    map.setPosition(positions[posCtr][0],positions[posCtr][1],map.getWidth(),map.getHeight());
+                    map.invalidate();
+
+                    btn1.setVisibility(View.VISIBLE);
+                    btn2.setVisibility(View.GONE);
+
+                    Toast.makeText(getApplicationContext(),"Position set to "+value,Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int whichButton)
+            {
+                // Canceled.
+            }
+        });
+
+        alert.show();
     }
 
 
@@ -448,5 +498,61 @@ public class RadioMapHome_Activity extends Activity
                 }
             }
         }
+    }
+
+
+    /**
+     * Initialize the set of Coordinates to be printed on the Map.
+     *
+     * @return an Array of Coordinates
+     */
+    private float[][] initCoordinates()
+    {
+        // Coordinates for my Home-Environment
+        float[][] homeCoordinates =
+                {{57,85},{123,85},{57,139},{123,139},                         // Room1
+                 {41,203},{107,203},{41,255},{107,255},                       // Room2
+                 {254,33},                                                    // Room3
+                 {220,83},{220,136},{220,184},                                // Room4 etc.
+                 {177,249},
+                 {236,249},
+                 {308,50},{381,50},{308,125},{381,125},
+                 {456,58},{456,120},
+                 {302,203},{376,203},{445,203},{302,252},{376,252},{445,252}};
+
+        // Coordinates to test functionality
+        float[][] testCoordinates =
+                {{299,120},{325,120}};
+
+        // Coordinates for first Recording-Session
+        float[][] recordCoordinates1 =                                          // 50 Fingerprints
+                {{299,120},{325,120},{299,141},{325,141},                       // G 002
+                 {393,144},{419,144},                                           // G 001
+                 {299,184},{325,184},{299,205},{325,205},                       // G 004
+                 {393,184},{419,184},{393,205},{419,205},                       // G 003
+                 {299,237},{325,237},{299,258},{325,258},                       // G 006
+                 {393,237},{419,237},{393,258},{419,258},                       // G 005
+                 {299,289},{325,289},{299,310},{325,310},                       // G 008
+                 {393,289},{419,289},{393,310},{419,310},                       // G 007
+                 {299,348},{325,348},{312,378},{299,409},{325,409},             // G 010
+                 {393,348},{419,348},{406,378},{393,409},{419,409},             // G 009
+
+                 {359,138},{359,168},{359,198},{359,228},{359,258},             // Gang
+                 {359,288},{359,318},{359,348},{359,378},{359,408}};
+
+        // Coordinates for second Recording-Session
+        float[][] recordCoordinates2 =                                          // 34 Fingerprints
+                {{360,63},{360,94},{381, 63},{381, 94},                         // Mittelstück
+                 {408,68},{429,86},{408,103},                                   // Treppen
+                 {295,65},{295,84},                                             // Klo links
+                 {328,65},{328,84},                                             // Klo rechts
+
+                 {15, 34},{45, 34},{75, 34},{105,34},{135,34},                  // Gang oben
+                 {165,34},{195,34},{225,34},{255,34},{285,34},
+                 {315,34},{345,34},{375,34},{405,34},{435,34},
+                 {465,34},{495,34},{525,34},{555,34},{585,34},
+                 {615,34},{645,34},{675,34}};
+
+        return recordCoordinates1;
     }
 }

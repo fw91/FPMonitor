@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:layout_below="@id/title"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="30dp"
         android:id="@+id/wlan_view"/>
 
     <TextView
@@ -73,37 +73,5 @@
         android:layout_marginTop="10dp"
         android:layout_gravity="center_vertical|center_horizontal"
         android:visibility="gone" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/compassTV"
-        android:textSize="35sp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20dp"
-        android:gravity="center"
-        android:visibility="gone"/>
-
-    <TableRow
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:id="@+id/exportDB"
-            android:text="@string/radioMap_showBtn"/>
-
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:id="@+id/deleteDB"
-            android:text="@string/radioMap_deleteBtn"/>
-
-    </TableRow>
 
 </RelativeLayout>

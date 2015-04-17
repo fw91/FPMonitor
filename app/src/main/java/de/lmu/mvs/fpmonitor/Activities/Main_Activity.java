@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import de.lmu.mvs.fpmonitor.R;
 
@@ -23,13 +24,15 @@ public class Main_Activity extends Activity
         Button btn1 = (Button)findViewById(R.id.testingBtn);
         Button btn2 = (Button)findViewById(R.id.fpHomeBtn);
         Button btn3 = (Button)findViewById(R.id.recordHomeBtn);
+        Button btn4 = (Button)findViewById(R.id.toComeBtn);
 
         btn1.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), Testing_Activity.class));
+                //startActivity(new Intent(getApplicationContext(), Testing_Activity.class));
+                Toast.makeText(getApplicationContext(),"Currently Disabled.",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -38,7 +41,8 @@ public class Main_Activity extends Activity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), FingerprintingHome_Activity.class));
+                //startActivity(new Intent(getApplicationContext(), FingerprintingHome_Activity.class));
+                Toast.makeText(getApplicationContext(),"Currently Disabled.",Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -47,7 +51,14 @@ public class Main_Activity extends Activity
             @Override
             public void onClick(View view)
             {
-                startActivity(new Intent(getApplicationContext(), RadioMapHome_Activity.class));
+                startActivity(new Intent(getApplicationContext(), OfflinePhase_Activity.class));
+            }
+        });
+
+        btn4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), Placeholder_Activity.class));
             }
         });
     }
