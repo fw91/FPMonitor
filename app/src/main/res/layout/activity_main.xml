@@ -51,9 +51,18 @@
         android:id="@+id/toComeBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/menu_btn4"
+        android:text="Get Direction"
         android:layout_marginTop="40dp"
         android:layout_below="@id/fpHomeBtn"
+        android:layout_gravity="center_horizontal"/>
+
+    <Button
+        android:id="@+id/dbOperations"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DB Operations"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/toComeBtn"
         android:layout_gravity="center_horizontal"/>
 
     <Button

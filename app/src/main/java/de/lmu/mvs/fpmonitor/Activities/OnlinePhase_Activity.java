@@ -114,7 +114,7 @@ public class OnlinePhase_Activity extends Activity
 
             if (wifiScanList != null)
             {
-                PointF mapPos = myDistanceReasoner.getPosition(DH.getFingerprints(compass.getDir()), wifiScanList);
+                PointF mapPos = myDistanceReasoner.getPosition(DH.getProbFingerprints(compass.getDir()), wifiScanList);
                 map.setPosition(mapPos.x, mapPos.y, map.getWidth(), map.getHeight());
                 map.invalidate();
             }

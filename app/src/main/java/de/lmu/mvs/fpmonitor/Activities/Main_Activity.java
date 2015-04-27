@@ -25,6 +25,7 @@ public class Main_Activity extends Activity
         Button btn2 = (Button)findViewById(R.id.fpHomeBtn);
         Button btn3 = (Button)findViewById(R.id.recordHomeBtn);
         Button btn4 = (Button)findViewById(R.id.toComeBtn);
+        Button btn5 = (Button)findViewById(R.id.dbOperations);
 
         btn1.setOnClickListener(new View.OnClickListener()
         {
@@ -59,6 +60,13 @@ public class Main_Activity extends Activity
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), Placeholder_Activity.class));
+            }
+        });
+
+        btn5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), DBOperations_Activity.class));
             }
         });
     }

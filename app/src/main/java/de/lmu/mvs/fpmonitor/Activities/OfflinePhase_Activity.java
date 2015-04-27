@@ -236,7 +236,7 @@ public class OfflinePhase_Activity extends ActionBarActivity
                 setPositionDialog();
                 break;
             case R.id.exp_db:
-                DH.exportDB(getApplicationContext());
+                DH.exportDB();
                 break;
             case R.id.del_db:
                 clearDatabaseDialog();
@@ -369,7 +369,7 @@ public class OfflinePhase_Activity extends ActionBarActivity
 
         Fingerprint currentFP = new Fingerprint(x, y, direction, scansFinal);
 
-        DH.saveFingerprint(currentFP);
+        DH.saveProbFingerprint(currentFP);
     }
 
 
@@ -387,7 +387,7 @@ public class OfflinePhase_Activity extends ActionBarActivity
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                DH.clearDB();
+                DH.clearProbTable();
                 dialog.cancel();
                 Toast.makeText(getApplicationContext(),"Database cleared",Toast.LENGTH_SHORT).show();
             }
@@ -508,21 +508,12 @@ public class OfflinePhase_Activity extends ActionBarActivity
      */
     private float[][] initCoordinates()
     {
-        // Coordinates for my Home-Environment
-        float[][] homeCoordinates =
-                {{57,85},{123,85},{57,139},{123,139},                         // Room1
-                 {41,203},{107,203},{41,255},{107,255},                       // Room2
-                 {254,33},                                                    // Room3
-                 {220,83},{220,136},{220,184},                                // Room4 etc.
-                 {177,249},
-                 {236,249},
-                 {308,50},{381,50},{308,125},{381,125},
-                 {456,58},{456,120},
-                 {302,203},{376,203},{445,203},{302,252},{376,252},{445,252}};
-
         // Coordinates to test functionality
         float[][] testCoordinates =
-                {{299,120},{325,120}};
+                {
+                  {295,62},{295,75},                                            // Herrenklo
+                  {328,68}                                                      // Damenklo
+                };
 
         // Coordinates for first Recording-Session
         float[][] recordCoordinates1 =                                          // 50 Fingerprints
@@ -544,8 +535,8 @@ public class OfflinePhase_Activity extends ActionBarActivity
         float[][] recordCoordinates2 =                                          // 34 Fingerprints
                 {{360,63},{360,94},{381, 63},{381, 94},                         // Mittelstück
                  {408,68},{429,86},{408,103},                                   // Treppen
-                 {295,65},{295,84},                                             // Klo links
-                 {328,65},{328,84},                                             // Klo rechts
+                 {295,62},{295,75},                                             // Herrenklo
+                 {328,68},                                                      // Damenklo
 
                  {15, 34},{45, 34},{75, 34},{105,34},{135,34},                  // Gang oben
                  {165,34},{195,34},{225,34},{255,34},{285,34},
@@ -553,6 +544,6 @@ public class OfflinePhase_Activity extends ActionBarActivity
                  {465,34},{495,34},{525,34},{555,34},{585,34},
                  {615,34},{645,34},{675,34}};
 
-        return recordCoordinates1;
+        return recordCoordinates2;
     }
 }

@@ -59,7 +59,7 @@ public class Testing_Activity extends Activity implements SensorEventListener
 
         DH = new DatabaseHandler(this);
 
-        test = DH.getFingerprints(74);
+        test = DH.getProbFingerprints(74);
 
         Log.i("FPDATA",test.toString());
 

@@ -52,7 +52,7 @@ public class MapView extends ImageView
         setImageDrawable(res.getDrawable(R.drawable.oettingenplan));
 
         myPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        myPaint.setColor(Color.BLUE);
+        myPaint.setColor(Color.RED);
 
         x = 0;
         y = 0;
@@ -123,11 +123,10 @@ public class MapView extends ImageView
         canvas.drawCircle(645,34,4,myPaint);
         canvas.drawCircle(675,34,4,myPaint);
 
-        canvas.drawCircle(295,65,4,myPaint); // Klo links
-        canvas.drawCircle(295,84,4,myPaint);
+        canvas.drawCircle(295,62,4,myPaint); // Herrenklo
+        canvas.drawCircle(295,75,4,myPaint);
 
-        canvas.drawCircle(328,65,4,myPaint); // Klo rechts
-        canvas.drawCircle(328,84,4,myPaint);
+        canvas.drawCircle(328,68,4,myPaint); // Damenklo
 
         canvas.drawCircle(360,63,4,myPaint); // Mittelstück
         canvas.drawCircle(360,94,4,myPaint);
