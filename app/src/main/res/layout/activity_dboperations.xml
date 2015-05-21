@@ -51,6 +51,14 @@
         android:layout_marginTop="10dp"
         android:layout_gravity="center_horizontal"/>
 
+    <Button
+        android:id="@+id/beaconsBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Load Beacons"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_horizontal"/>
+
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dip"

@@ -7,6 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,11 +36,12 @@ public class DBOperations_Activity extends Activity
 
         dbFingerprints = new ArrayList<>();
 
-        Button importBtn    = (Button)findViewById(R.id.importBtn);
-        Button exportBtn    = (Button)findViewById(R.id.exportBtn);
-        Button loadBtn      = (Button)findViewById(R.id.loadBtn);
-        Button refactorBtn  = (Button)findViewById(R.id.refactorBtn);
-        Button clearBtn     = (Button)findViewById(R.id.clearBtn);
+        Button importBtn    = (Button)findViewById(R.id.importBtn);   // Import the DB from Assets
+        Button exportBtn    = (Button)findViewById(R.id.exportBtn);   // Export the DB onto the Device
+        Button loadBtn      = (Button)findViewById(R.id.loadBtn);     // Load the ProbFPs for Refactor
+        Button beaconsBtn   = (Button)findViewById(R.id.beaconsBtn);  // Read and Store the FPs from the BeaconScans (Assets)
+        Button refactorBtn  = (Button)findViewById(R.id.refactorBtn); // Temporary Function for Refactoring the DB
+        Button clearBtn     = (Button)findViewById(R.id.clearBtn);    // Useless right now
 
 
         importBtn.setOnClickListener(new View.OnClickListener()
@@ -73,6 +77,13 @@ public class DBOperations_Activity extends Activity
                 {
                     //Log.e("FP_Data", f.toString());
                 }
+            }
+        });
+
+        beaconsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                readBeacons();
             }
         });
 
@@ -233,5 +244,71 @@ public class DBOperations_Activity extends Activity
         testList.add(new Fingerprint(6,8,0,scansList));
 
         return testList;
+    }
+
+    private void readBeacons()
+    {
+        try
+        {
+            String[] filenames = getApplicationContext().getAssets().list("BeaconScans");
+
+            for (String file : filenames)
+            {
+                // Log.e("Filename",file);
+                InputStream is    = getApplicationContext().getAssets().open("BeaconScans/" + file);
+                BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+                ArrayList<APInfo> apInfoArrayListFinal = new ArrayList<>();
+                ArrayList<APInfo> apInfoArrayListRaw   = new ArrayList<>();
+                ArrayList<String> macIDs               = new ArrayList<>();
+                ArrayList<WifiScan> scans              = new ArrayList<>();
+
+                String line;
+
+                while ((line=br.readLine())!=null)
+                {
+                    String[] input = line.split(",");
+                    apInfoArrayListRaw.add(new APInfo(input[2], Integer.parseInt(input[1])));
+                }
+
+                for (int i=0;i<apInfoArrayListRaw.size();i++)
+                {
+                    if (!macIDs.contains(apInfoArrayListRaw.get(i).mac))
+                    {
+                        macIDs.add(apInfoArrayListRaw.get(i).mac);
+                    }
+                }
+
+                for (String mac : macIDs)
+                {
+                    double median = 0;
+                    int ctr       = 0;
+
+                    for (int i=0;i<apInfoArrayListRaw.size();i++)
+                    {
+                        if (mac.equals(apInfoArrayListRaw.get(i).mac))
+                        {
+                            median += apInfoArrayListRaw.get(i).rssi;
+                            ctr++;
+                        }
+                    }
+
+                    median = (median/ctr);
+
+                    apInfoArrayListFinal.add(new APInfo(mac, (int) median));
+                }
+
+                scans.add(new WifiScan(1,apInfoArrayListFinal));
+
+                Fingerprint fp = new Fingerprint(0,0,0,scans);
+
+                Log.e("Nr","Fingerprint \"" + file + "\" stored");
+                Log.d("Fingerprint Data",fp.toString());
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }
