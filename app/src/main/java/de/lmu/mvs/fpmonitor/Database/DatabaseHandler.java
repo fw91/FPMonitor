@@ -35,6 +35,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     private static final String PROBABILISTIC_FINGERPRINTS_TABLE = "probabilistic_fingerprints";
     private static final String DETERMINISTIC_FINGERPRINTS_TABLE = "deterministic_fingerprints";
     private static final String CSV_FORMATTED_TABLE              = "csv_formatted_fingerprints";
+    private static final String DETERMINISTIC_BEACON_TABLE       = "deterministic_beacon_data";
     private static final String TESTING_TABLE                    = "testing_table";
 
     private static final String FP_ID      = "_id";
@@ -67,6 +68,11 @@ public class DatabaseHandler extends SQLiteOpenHelper
                         + DIR        + " INTEGER, "
                         + WIFI_SCANS + " TEXT)";
 
+    private static final String createDeterministicBeaconTable =
+        "CREATE TABLE " + DETERMINISTIC_BEACON_TABLE +
+                   " (" + FP_ID      + " TEXT PRIMARY KEY, "
+                        + WIFI_SCANS + " TEXT)";
+
     private static final String createTestingTable =
         "CREATE TABLE " + TESTING_TABLE +
                    " (" + FP_ID      + " TEXT PRIMARY KEY, "
@@ -93,6 +99,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
         db.execSQL(createProbabilisticTable);
         db.execSQL(createDeterministicTable);
         db.execSQL(createCSVFormattedTable);
+        db.execSQL(createDeterministicBeaconTable);
         db.execSQL(createTestingTable);
     }
 
@@ -119,7 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
     {
         try
         {
-            InputStream myInput = context.getAssets().open("firsttest.db");
+            InputStream myInput = context.getAssets().open("OettingenDBFinal.db");
 
             String outFileName = "data//data//de.lmu.mvs.fpmonitor//databases//fpDatabase";
 
@@ -356,7 +363,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
      * Retrieve an ArrayList of all the Fingerprints stored based on the Direction.
      *
      * @return An ArrayList of all Fingerprints stored
-     */
+     *
     public ArrayList<Fingerprint> getProbFingerprints(int direction)
     {
         SQLiteDatabase db = getReadableDatabase();
@@ -430,7 +437,7 @@ public class DatabaseHandler extends SQLiteOpenHelper
         db.close();
 
         return fingerprints;
-    }
+    }*/
 
 
     /**
@@ -548,6 +555,59 @@ public class DatabaseHandler extends SQLiteOpenHelper
         fingerprintValues.put(WIFI_SCANS, ArrayToJSON(f.scans).toString());
 
         db.insert(DETERMINISTIC_FINGERPRINTS_TABLE,null,fingerprintValues);
+
+        db.close();
+    }
+
+
+
+    // ****************************************************************************************** //
+    // *** Det-Beacon-Table Functions *********************************************************** //
+    // ****************************************************************************************** //
+
+
+    /**
+     *  Clear the Spot-Table and re-create an empty one.
+     */
+    public void clearDetBeaconTable()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + DETERMINISTIC_BEACON_TABLE);
+        db.execSQL(createDeterministicBeaconTable);
+        db.close();
+    }
+
+
+    /**
+     * Easy way of checking if there is any data inside the Table.
+     *
+     * @return true if Table is empty, false if there is Data inside
+     */
+    private boolean detBeaconTableIsEmpty()
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor mCursor = db.rawQuery("SELECT * FROM " + DETERMINISTIC_BEACON_TABLE, null);
+
+        return !mCursor.moveToFirst();
+    }
+
+
+    /**
+     * Save the Beacon Data from the .txt Documents.
+     *
+     * @param filename Name of the File
+     * @param scan Scan Value
+     */
+    public void saveBeaconData(String filename, ArrayList<WifiScan> scan)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues fingerprintValues = new ContentValues();
+
+        fingerprintValues.put(FP_ID,      filename);
+        fingerprintValues.put(WIFI_SCANS, ArrayToJSON(scan).toString());
+
+        db.insert(DETERMINISTIC_BEACON_TABLE,null,fingerprintValues);
 
         db.close();
     }

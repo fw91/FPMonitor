@@ -23,7 +23,7 @@
         android:layout_marginTop="10dp"/>
 
     <Button
-        android:id="@+id/recordHomeBtn"
+        android:id="@+id/offlineBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn3"
@@ -32,37 +32,44 @@
         android:layout_gravity="center_horizontal"/>
 
     <Button
-        android:id="@+id/fpHomeBtn"
+        android:id="@+id/onlineBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn2"
         android:layout_marginTop="20dp"
-        android:layout_below="@id/recordHomeBtn"
+        android:layout_below="@id/offlineBtn"
         android:layout_gravity="center_horizontal"/>
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dip"
         android:background="#000000"
-        android:layout_below="@id/fpHomeBtn"
+        android:layout_below="@id/onlineBtn"
         android:layout_marginTop="20dp"/>
 
     <Button
-        android:id="@+id/toComeBtn"
+        android:id="@+id/tempBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Get Direction"
         android:layout_marginTop="40dp"
-        android:layout_below="@id/fpHomeBtn"
+        android:layout_below="@id/onlineBtn"
         android:layout_gravity="center_horizontal"/>
 
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:background="#000000"
+        android:layout_above="@id/dbOperationsBtn"
+        android:layout_marginBottom="10dp"/>
+
     <Button
-        android:id="@+id/dbOperations"
+        android:id="@+id/dbOperationsBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="DB Operations"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/toComeBtn"
+        android:layout_marginBottom="10dp"
+        android:layout_above="@id/testingBtn"
         android:layout_gravity="center_horizontal"/>
 
     <Button
@@ -70,7 +77,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/menu_btn1"
-        android:layout_marginTop="70dp"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center_horizontal"/>
 

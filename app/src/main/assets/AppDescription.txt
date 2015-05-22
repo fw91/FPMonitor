@@ -1,0 +1,95 @@
+****************************************************************************************************
+**                                                                                                **
+**                                           FPMonitor                                            **
+**                                                                                                **
+**                                                                             (c) Florian Wirth  **
+****************************************************************************************************
+
+
+*******************
+**  Description  **
+*******************
+
+- Die App dient als Hilfsmittel zur Umsetzung des praktischen Teils meiner Bachelorarbeit.
+- Alle für das Fingerprinting benötigten Funktionen wurden implemetiert und zur Verfügung gestellt.
+
+
+*******************
+***  Features  ****
+*******************
+
+* Offline-Phase
+  --------------------------------------------------------------------------------------------------
+  Diese Activity wird dazu genutzt, die Offline-Phase des Fingerprintings durchzuführen.
+  Hierfür wird eine Map mit vordefinierten Koordinaten (wird in der IDE festgelegt) auf das Device
+  projeziert. Bei jedem dieser Punkte wird der Scan per Hand gestartet und es werden 20 WifiScans
+  in 4 Directions ausgeführt und danach automatisch in die SQLite Datenbank abgespeichert.
+  (Dauer: in etwa 80 Sekunden für 20 Scans pro Direction)
+
+
+
+* Online-Phase
+  --------------------------------------------------------------------------------------------------
+  Diese Activity stellt den Live-Betrieb der App dar.
+  Es werden Scans durchgeführt und mittels der DistanceReasoner die aktuelle Position
+  berechnet und auf der Map angezeigt.
+
+
+
+* DB-Operations
+  --------------------------------------------------------------------------------------------------
+  Diese Activity dient lediglich dazu die gesammelten Daten nachzubearbeiten.
+
+  Funktionen
+
+    - Datenbanken im- und exportieren.
+    - Die Beacon Daten aus den jew. Textdateien einlesen und in die DB speichern.
+    - Die Datenbank formatieren. (Sortieren; Probabilistic -> Deterministic, also gemittelt; CSV)
+    - ...
+
+
+
+* SQLite-Datenbank
+  --------------------------------------------------------------------------------------------------
+  Wird dazu genutzt um sämtliche Daten persistent abzuspeichern.
+
+  Enthält 4 Tabellen
+
+    - Probabilistic-Fingerprints (Alle Daten aus der Offline-Phase, 20 Scans pro FP)
+    - Deterministic-Fingerprints (Wie Probabilistic, allerdings nurnoch 1 Scan pro FP ~ Mittelwert)
+    - Deterministic-Beacon Data  (Die Daten von den Beacons, 1 Scan pro FP ~ Mittelwert)
+    - CSV-Formatted              (Die Scans wurden formatiert, um sie in Excel laden zu können)
+
+  Funktionen
+
+    - Jede Tabelle löschen.
+    - Fingerprints abspeichern und auslesen.
+    - Beacon Data abspeichern und auslesen.
+    - im- und exportieren.
+
+
+
+* DeterministicDistanceReasoner
+  --------------------------------------------------------------------------------------------------
+  Implementierung des Positionierungsalgorithmus, der von SmartPos vorgeschlagen wird.
+  Wird lediglich auf die Deterministischen Fingerprints aus der DB angewandt.
+
+
+
+* ProbabilisticDistanceReasoner
+  --------------------------------------------------------------------------------------------------
+  TODO
+
+
+
+* Compass
+  --------------------------------------------------------------------------------------------------
+  Einfache Implementierung des Android-Compass.
+  Berechnet die Direction, in die das Gerät gerade zeigt.
+
+
+
+* MapView
+  --------------------------------------------------------------------------------------------------
+  Kümmert sich um die Darstellung des Gebäudeplans.
+  Kann einzelne Punkte anzeigen.

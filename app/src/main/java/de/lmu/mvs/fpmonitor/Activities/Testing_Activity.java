@@ -59,10 +59,6 @@ public class Testing_Activity extends Activity implements SensorEventListener
 
         DH = new DatabaseHandler(this);
 
-        test = DH.getProbFingerprints(74);
-
-        Log.i("FPDATA",test.toString());
-
         updateDir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

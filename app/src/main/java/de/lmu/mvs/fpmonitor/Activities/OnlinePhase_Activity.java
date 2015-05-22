@@ -15,9 +15,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import de.lmu.mvs.fpmonitor.Compass;
-import de.lmu.mvs.fpmonitor.Database.DatabaseHandler;
+import de.lmu.mvs.fpmonitor.DeterministicDistanceReasoner;
 import de.lmu.mvs.fpmonitor.MapView;
-import de.lmu.mvs.fpmonitor.MyDistanceReasoner;
 import de.lmu.mvs.fpmonitor.R;
 
 /**
@@ -31,9 +30,7 @@ public class OnlinePhase_Activity extends Activity
     WifiManager mWifiManager;
     WifiReceiver mWifiReceiver;
 
-    MyDistanceReasoner myDistanceReasoner;
-
-    DatabaseHandler DH;
+    DeterministicDistanceReasoner detDistanceReasoner;
 
     Compass compass;
 
@@ -44,18 +41,15 @@ public class OnlinePhase_Activity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_onlinephase);
 
-        map                = (MapView)findViewById(R.id.wlan_view);
+        map                 = (MapView)findViewById(R.id.wlan_view);
 
-        mWifiManager       = (WifiManager)getSystemService(WIFI_SERVICE);
-        mWifiReceiver      = new WifiReceiver();
+        mWifiManager        = (WifiManager)getSystemService(WIFI_SERVICE);
 
-        myDistanceReasoner = new MyDistanceReasoner();
+        mWifiReceiver       = new WifiReceiver();
 
-        compass            = new Compass(getApplicationContext());
+        detDistanceReasoner = new DeterministicDistanceReasoner(getApplicationContext());
 
-        DH                 = new DatabaseHandler(this);
-
-        activateWifiScan();
+        compass             = new Compass(getApplicationContext());
     }
 
 
@@ -65,8 +59,11 @@ public class OnlinePhase_Activity extends Activity
         {
             mWifiManager.setWifiEnabled(false);
         }
+
         unregisterReceiver(mWifiReceiver);
+
         compass.start();
+
         super.onPause();
     }
 
@@ -79,6 +76,9 @@ public class OnlinePhase_Activity extends Activity
         }
 
         registerReceiver(mWifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
+        activateWifiScan();
+
         compass.stop();
 
         super.onResume();
@@ -114,7 +114,7 @@ public class OnlinePhase_Activity extends Activity
 
             if (wifiScanList != null)
             {
-                PointF mapPos = myDistanceReasoner.getPosition(DH.getProbFingerprints(compass.getDir()), wifiScanList);
+                PointF mapPos = detDistanceReasoner.getPosition(compass.getDir(), wifiScanList);
                 map.setPosition(mapPos.x, mapPos.y, map.getWidth(), map.getHeight());
                 map.invalidate();
             }
