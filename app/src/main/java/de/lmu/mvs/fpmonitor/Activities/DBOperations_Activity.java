@@ -283,6 +283,12 @@ public class DBOperations_Activity extends Activity
     }
 
 
+    private void executeComparison()
+    {
+        //TODO
+    }
+
+
     /**
      * Calculate Median.
      * @param f

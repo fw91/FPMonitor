@@ -1,0 +1,60 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Record Training Data"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:id="@+id/title"/>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:background="#000000"
+        android:layout_below="@id/title"
+        android:layout_marginTop="10dp"/>
+
+    <de.lmu.mvs.fpmonitor.MapView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:layout_below="@id/title"
+        android:layout_marginTop="30dp"
+        android:id="@+id/wlan_view"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/recordTV"
+        android:layout_marginTop="20dp"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:layout_below="@id/wlan_view"/>
+
+    <Button
+        android:layout_below="@id/recordTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:id="@+id/recordBtn"
+        android:text="Start"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_below="@id/recordTV"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:visibility="gone" />
+
+</RelativeLayout>

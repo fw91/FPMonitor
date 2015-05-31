@@ -70,6 +70,29 @@ public class MapView extends ImageView
         }
 
         //drawAllFingerprints(canvas);
+
+        /* Training-Data
+        canvas.drawCircle(250,37,4,myPaint);
+        canvas.drawCircle(328,55,4,myPaint);
+        canvas.drawCircle(356,44,4,myPaint);
+        canvas.drawCircle(369,77,4,myPaint);
+        canvas.drawCircle(551,32,4,myPaint);
+        canvas.drawCircle(621,43,4,myPaint);
+        canvas.drawCircle(311,137,4,myPaint);
+        canvas.drawCircle(385,156,4,myPaint);
+        canvas.drawCircle(362,243,4,myPaint);
+        canvas.drawCircle(319,186,4,myPaint);
+        canvas.drawCircle(319,206,4,myPaint);
+        canvas.drawCircle(304,286,4,myPaint);
+        canvas.drawCircle(404,300,4,myPaint);
+        canvas.drawCircle(360,369,4,myPaint);
+        canvas.drawCircle(316,362,4,myPaint);
+        canvas.drawCircle(297,412,4,myPaint);
+        canvas.drawCircle(356,401,4,myPaint);
+        canvas.drawCircle(406,354,4,myPaint);
+        canvas.drawCircle(427,381,4,myPaint);
+        canvas.drawCircle(389,397,4,myPaint);
+        */
     }
 
 

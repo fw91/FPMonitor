@@ -24,6 +24,7 @@ public class Main_Activity extends Activity
         Button offlineBtn = (Button)findViewById(R.id.offlineBtn);
         Button onlineBtn  = (Button)findViewById(R.id.onlineBtn);
 
+        Button recordBtn  = (Button)findViewById(R.id.recordBtn);
         Button tempBtn    = (Button)findViewById(R.id.tempBtn);
 
         Button dbOpBtn    = (Button)findViewById(R.id.dbOperationsBtn);
@@ -46,6 +47,15 @@ public class Main_Activity extends Activity
             }
         });
 
+
+        recordBtn.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                startActivity(new Intent(getApplicationContext(), Record_Activity.class));
+            }
+        });
 
         tempBtn.setOnClickListener(new View.OnClickListener() {
             @Override
